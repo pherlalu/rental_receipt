@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="🎀 Receipts">
+<title>🎀 Rental Receipts</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Playfair+Display:wght@700&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --pink:#f472b6;--pk:#db2777;--pklite:#fce7f3;--pkpale:#fdf2f8;
+  --pur:#a855f7;--purd:#7e22ce;--purlite:#f3e8ff;
+  --bdr:#f0abdc;--muted:#c084b8;--ink:#4a1942;--paper:#fff5fc;
+}
+html{height:-webkit-fill-available;}
+body{
+  font-family:'Quicksand',sans-serif;
+  background:linear-gradient(145deg,#fce7f3,#f3e8ff);
+  min-height:100vh;min-height:-webkit-fill-available;
+  display:flex;flex-direction:column;align-items:center;
+  padding-bottom:60px;overscroll-behavior-y:none;
+}
+.app-header{width:100%;max-width:480px;padding:16px 16px 8px;text-align:center;}
+.app-header h1{font-size:.9rem;font-weight:700;color:var(--purd);letter-spacing:.12em;text-transform:uppercase;}
+
+/* TAB BAR */
+.tab-bar{position:sticky;top:0;z-index:100;width:100%;max-width:480px;background:rgba(255,255,255,.93);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);padding:6px 12px 8px;display:flex;gap:6px;border-bottom:1.5px solid var(--bdr);}
+.tab{flex:1;padding:11px 6px;text-align:center;border-radius:10px;font-size:.85rem;font-weight:700;color:var(--muted);cursor:pointer;user-select:none;transition:all .2s;}
+.tab.active{background:linear-gradient(135deg,var(--pk),var(--purd));color:white;}
+
+.panel{display:none;width:100%;max-width:480px;flex-direction:column;gap:16px;padding:14px 12px;}
+.panel.active{display:flex;}
+
+/* CARDS */
+.card{background:white;border-radius:18px;box-shadow:0 2px 16px rgba(168,85,247,.1),0 0 0 1px var(--bdr);padding:18px 16px;}
+.card-title{font-size:.9rem;font-weight:700;color:var(--muted);margin-bottom:14px;padding-bottom:10px;border-bottom:1.5px dashed var(--bdr);}
+.field-group{display:flex;flex-direction:column;gap:12px;}
+.sec{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--pk);margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+.sec::after{content:'';flex:1;height:1.5px;background:linear-gradient(to right,var(--bdr),transparent);}
+label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);display:block;margin-bottom:4px;}
+input[type=text],input[type=date],input[type=number],input[type=tel],input[type=email],textarea,select{
+  width:100%;padding:13px 14px;border:1.5px solid var(--bdr);border-radius:12px;
+  font-family:'Quicksand',sans-serif;font-size:16px;font-weight:600;color:var(--ink);
+  background:var(--pkpale);outline:none;-webkit-appearance:none;appearance:none;
+  transition:border-color .2s,box-shadow .2s;
+}
+input:focus,textarea:focus,select:focus{border-color:var(--pur);box-shadow:0 0 0 3px rgba(168,85,247,.15);background:white;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+textarea{resize:none;min-height:60px;font-size:15px;}
+.pills{display:flex;gap:8px;flex-wrap:wrap;}
+.pill{padding:9px 16px;border-radius:50px;border:1.5px solid var(--bdr);background:var(--pkpale);font-size:.82rem;font-weight:700;color:var(--muted);cursor:pointer;user-select:none;transition:all .18s;}
+.pill.on{background:linear-gradient(135deg,var(--pink),var(--pur));border-color:transparent;color:white;}
+
+/* RECEIPT PREVIEW */
+.receipt-preview{background:var(--paper);border-radius:4px;box-shadow:0 2px 0 var(--bdr),0 4px 0 #f0c0e8,0 6px 0 var(--bdr),0 8px 20px rgba(168,85,247,.15);overflow:hidden;}
+.perf{height:10px;background-color:var(--pink);background-image:radial-gradient(circle at 10px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 30px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 50px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 70px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 90px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 110px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 130px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 150px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 170px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 190px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 210px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 230px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 250px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 270px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 290px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 310px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 330px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 350px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 370px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 390px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 410px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 430px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 450px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 470px 10px,#fce7f3 6px,transparent 6px);background-size:20px 20px;}
+.ri{padding:18px 20px;}
+.rhead{text-align:center;margin-bottom:16px;padding-bottom:14px;border-bottom:1.5px dashed var(--bdr);}
+.kitty-logo{display:flex;justify-content:center;margin-bottom:8px;}
+.kitty-logo svg{width:68px;height:68px;filter:drop-shadow(0 2px 6px rgba(219,39,119,.25));}
+.rcompany{font-size:1.05rem;font-weight:700;color:var(--ink);}
+.rbadge{display:inline-block;margin-top:5px;padding:3px 14px;background:linear-gradient(135deg,var(--pink),var(--pur));color:white;font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;border-radius:50px;}
+.rmeta{display:flex;justify-content:space-between;margin-bottom:12px;font-size:.76rem;color:var(--muted);font-weight:600;}
+.rmeta span{font-weight:700;color:var(--ink);}
+.rrow{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px dashed var(--bdr);font-size:.85rem;}
+.rrow:last-child{border-bottom:none;}
+.rl{color:var(--muted);font-size:.76rem;font-weight:600;}
+.rv{color:var(--ink);font-weight:700;text-align:right;max-width:58%;}
+.totalbox{margin-top:12px;background:linear-gradient(135deg,var(--pk),var(--purd));border-radius:12px;padding:13px 16px;display:flex;justify-content:space-between;align-items:center;}
+.tlbl{color:rgba(255,255,255,.8);font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;}
+.tamt{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:white;}
+.paid{text-align:center;margin-top:12px;padding:7px;border:2px solid var(--pur);border-radius:8px;color:var(--purd);font-weight:700;font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;background:var(--purlite);}
+.rnotes{margin-top:10px;font-size:.76rem;color:var(--muted);font-style:italic;line-height:1.5;}
+.rfooter{margin-top:12px;padding-top:10px;border-top:1.5px dashed var(--bdr);text-align:center;font-size:.7rem;color:var(--muted);line-height:1.7;font-weight:600;}
+.sigline{margin-top:12px;border-top:1px solid var(--pink);width:60%;margin-left:auto;margin-right:auto;padding-top:5px;font-size:.7rem;color:var(--muted);text-align:center;font-weight:600;}
+
+/* BUTTONS */
+.btn-main{width:100%;padding:17px;background:linear-gradient(135deg,var(--pk),var(--purd));color:white;border:none;border-radius:16px;font-family:'Quicksand',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;box-shadow:0 6px 20px rgba(168,85,247,.28);display:flex;align-items:center;justify-content:center;gap:10px;transition:transform .15s;user-select:none;}
+.btn-main:active{transform:scale(.97);}
+.btn-main svg{width:20px;height:20px;flex-shrink:0;}
+
+/* SEND SECTION */
+.send-card{background:white;border-radius:18px;box-shadow:0 2px 16px rgba(168,85,247,.1),0 0 0 1px var(--bdr);padding:18px 16px;}
+
+/* BIG SHARE BUTTON */
+.btn-share-big{
+  width:100%;padding:18px;border:none;border-radius:16px;
+  background:linear-gradient(135deg,#007aff,#0055d4);
+  color:white;font-family:'Quicksand',sans-serif;font-size:1.05rem;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;
+  box-shadow:0 6px 22px rgba(0,122,255,.35);transition:transform .15s;user-select:none;
+  margin-bottom:12px;
+}
+.btn-share-big:active{transform:scale(.97);}
+.btn-share-big svg{width:22px;height:22px;flex-shrink:0;}
+
+.share-apps-row{
+  display:flex;gap:8px;justify-content:center;flex-wrap:wrap;
+  margin-bottom:12px;
+}
+.app-chip{
+  display:flex;align-items:center;gap:5px;
+  padding:5px 11px;border-radius:50px;
+  font-size:.72rem;font-weight:700;
+  border:1.5px solid var(--bdr);background:var(--pkpale);color:var(--ink);
+}
+.app-chip span{font-size:.9rem;}
+
+.divider-row{display:flex;align-items:center;gap:10px;margin:12px 0;}
+.divider-line{flex:1;height:1px;background:var(--bdr);}
+.divider-txt{font-size:.7rem;font-weight:700;color:var(--muted);white-space:nowrap;}
+
+/* SMS + EMAIL side by side */
+.send-row{display:flex;gap:10px;}
+.btn-sms{flex:1;padding:14px 8px;border:none;border-radius:14px;background:linear-gradient(135deg,#22c55e,#16a34a);color:white;font-family:'Quicksand',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:transform .15s;user-select:none;}
+.btn-email{flex:1;padding:14px 8px;border:none;border-radius:14px;background:linear-gradient(135deg,#ea4335,#c5221f);color:white;font-family:'Quicksand',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:transform .15s;user-select:none;}
+.btn-sms:active,.btn-email:active{transform:scale(.96);}
+.btn-sms svg,.btn-email svg{width:16px;height:16px;flex-shrink:0;}
+.send-note{font-size:.7rem;color:var(--muted);font-weight:600;line-height:1.6;margin-top:10px;text-align:center;}
+
+/* LEDGER */
+.ledger-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.ledger-top h2{font-size:.95rem;font-weight:700;color:var(--ink);}
+.btn-acts{display:flex;gap:8px;}
+.bsm{padding:9px 14px;border-radius:10px;border:none;font-family:'Quicksand',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;transition:all .18s;user-select:none;}
+.bsm:active{transform:scale(.96);}
+.bex{background:linear-gradient(135deg,var(--pink),var(--pur));color:white;}
+.bcl{background:#fee2e2;color:#dc2626;}
+.sum-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;}
+.scard{background:linear-gradient(135deg,var(--pklite),var(--purlite));border-radius:12px;padding:10px 6px;text-align:center;border:1px solid var(--bdr);}
+.sval{font-size:.95rem;font-weight:700;color:var(--ink);}
+.slbl{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-top:2px;}
+.lempty{text-align:center;padding:28px 10px;color:var(--muted);font-size:.88rem;font-weight:600;line-height:1.7;}
+
+/* LEDGER ENTRY CARDS */
+.lentry{background:var(--pkpale);border-radius:14px;border:1.5px solid var(--bdr);padding:12px 14px;margin-bottom:10px;}
+.lentry:last-child{margin-bottom:0;}
+.le-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.le-num{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:white;background:linear-gradient(135deg,var(--pink),var(--pur));padding:2px 8px;border-radius:50px;}
+.le-actions{display:flex;gap:6px;}
+.le-btn{width:30px;height:30px;border-radius:8px;border:none;font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s;user-select:none;}
+.le-btn:active{transform:scale(.88);}
+.le-edit{background:var(--purlite);color:var(--purd);}
+.le-del{background:#fee2e2;color:#dc2626;}
+.le-fields{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;font-size:.8rem;}
+.le-field{display:flex;flex-direction:column;gap:2px;}
+.le-label{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);}
+.le-val{font-weight:700;color:var(--ink);}
+.le-bottom{margin-top:10px;display:flex;justify-content:space-between;align-items:center;}
+.le-amount{font-size:1rem;font-weight:700;color:var(--purd);}
+.le-running{font-size:.72rem;color:var(--muted);font-weight:600;}
+.le-notes{margin-top:6px;font-size:.74rem;color:var(--muted);font-style:italic;}
+
+/* LEDGER SEND ROW */
+.le-send-section{margin-top:10px;padding-top:10px;border-top:1px dashed var(--bdr);}
+.le-send-label{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:7px;}
+
+/* Big share button on ledger entry */
+.le-share-btn{
+  width:100%;padding:11px;border:none;border-radius:12px;
+  background:linear-gradient(135deg,#007aff,#0055d4);
+  color:white;font-family:'Quicksand',sans-serif;font-size:.85rem;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;
+  transition:transform .15s;user-select:none;margin-bottom:8px;
+  box-shadow:0 3px 12px rgba(0,122,255,.25);
+}
+.le-share-btn:active{transform:scale(.96);}
+.le-share-btn svg{width:16px;height:16px;flex-shrink:0;}
+
+.le-sub-row{display:flex;gap:7px;}
+.le-sms{flex:1;padding:9px 6px;border:none;border-radius:10px;background:linear-gradient(135deg,#22c55e,#16a34a);color:white;font-family:'Quicksand',sans-serif;font-size:.76rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:transform .15s;user-select:none;}
+.le-mail{flex:1;padding:9px 6px;border:none;border-radius:10px;background:linear-gradient(135deg,#ea4335,#c5221f);color:white;font-family:'Quicksand',sans-serif;font-size:.76rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:transform .15s;user-select:none;}
+.le-sms:active,.le-mail:active{transform:scale(.95);}
+.le-sms svg,.le-mail svg{width:13px;height:13px;flex-shrink:0;}
+
+/* TOAST */
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);background:linear-gradient(135deg,#16a34a,#15803d);color:white;padding:12px 24px;border-radius:50px;font-family:'Quicksand',sans-serif;font-size:.88rem;font-weight:700;box-shadow:0 4px 20px rgba(0,0,0,.2);transition:transform .35s cubic-bezier(.34,1.56,.64,1);z-index:999;white-space:nowrap;pointer-events:none;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+
+/* BOTTOM SHEET */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(74,25,66,.5);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);z-index:500;justify-content:flex-end;flex-direction:column;align-items:center;}
+.modal-bg.open{display:flex;}
+.modal{background:white;border-radius:24px 24px 0 0;padding:20px 20px 48px;width:100%;max-width:480px;animation:slideUp .3s cubic-bezier(.34,1.56,.64,1);max-height:90vh;overflow-y:auto;}
+@keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.modal-handle{width:40px;height:4px;background:#e5e7eb;border-radius:4px;margin:0 auto 16px;}
+.modal-icon{font-size:2rem;text-align:center;margin-bottom:8px;}
+.modal h3{font-size:1.05rem;font-weight:700;color:var(--ink);margin-bottom:6px;text-align:center;}
+.modal p{font-size:.85rem;color:var(--muted);font-weight:600;margin-bottom:20px;line-height:1.5;text-align:center;}
+.modal-btns{display:flex;gap:10px;}
+.mbtn{flex:1;padding:15px;border-radius:14px;border:none;font-family:'Quicksand',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;transition:transform .15s;}
+.mbtn:active{transform:scale(.97);}
+.mbtn.cancel{background:#f3f4f6;color:#6b7280;}
+.mbtn.danger{background:linear-gradient(135deg,#ef4444,#dc2626);color:white;}
+.mbtn.save{background:linear-gradient(135deg,var(--pk),var(--purd));color:white;}
+.edit-fields{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
+.edit-fields label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);display:block;margin-bottom:3px;}
+.edit-fields input,.edit-fields select,.edit-fields textarea{width:100%;padding:11px 14px;border:1.5px solid var(--bdr);border-radius:12px;font-family:'Quicksand',sans-serif;font-size:16px;font-weight:600;color:var(--ink);background:var(--pkpale);outline:none;-webkit-appearance:none;appearance:none;}
+.edit-fields input:focus,.edit-fields select:focus,.edit-fields textarea:focus{border-color:var(--pur);box-shadow:0 0 0 3px rgba(168,85,247,.15);background:white;}
+.edit-r2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+/* SHARE INFO BOX */
+.share-info{background:var(--purlite);border:1.5px solid #d8b4fe;border-radius:12px;padding:12px 14px;font-size:.78rem;color:var(--purd);font-weight:600;line-height:1.7;margin-top:4px;}
+.share-info strong{color:var(--purd);}
+</style>
+</head>
+<body>
+
+<div class="app-header"><h1>🎀 Rental Receipts 🎀</h1></div>
+
+<div class="tab-bar">
+  <div class="tab active" id="tab-receipt" onclick="showTab('receipt')">🧾 Receipt</div>
+  <div class="tab" id="tab-ledger" onclick="showTab('ledger')">📒 Ledger</div>
+</div>
+
+<!-- ══════════ RECEIPT PANEL ══════════ -->
+<div class="panel active" id="panel-receipt">
+
+  <div class="card">
+    <div class="card-title">✨ Receipt Details</div>
+    <div class="field-group">
+      <div class="sec">🏠 Property & Landlord</div>
+      <div><label>Landlord / Company Name</label><input type="text" id="landlord" value="Sunrise Property Management" oninput="upd()" autocomplete="organization"></div>
+      <div><label>Property Address</label><input type="text" id="address" value="123 Main St, Apt 4B" oninput="upd()" autocomplete="street-address"></div>
+      <div class="sec">🎀 Tenant</div>
+      <div><label>Tenant Full Name</label><input type="text" id="tenant" value="Jane Smith" oninput="upd()" autocomplete="name"></div>
+      <div class="sec">💳 Payment</div>
+      <div class="row2">
+        <div><label>Invoice #</label><input type="text" id="invoice" value="2024-001" oninput="upd()"></div>
+        <div><label>Date</label><input type="date" id="date" oninput="upd()"></div>
+      </div>
+      <div class="row2">
+        <div><label>Amount ($)</label><input type="number" id="amount" value="1200" min="0" step="0.01" inputmode="decimal" oninput="upd()"></div>
+        <div><label>Period</label><input type="text" id="period" placeholder="e.g. June 2024" oninput="upd()"></div>
+      </div>
+      <div>
+        <label>Payment Method</label>
+        <div class="pills">
+          <div class="pill on" onclick="selM(this,'Cash')">Cash</div>
+          <div class="pill" onclick="selM(this,'Cheque')">Cheque</div>
+          <div class="pill" onclick="selM(this,'E-Transfer')">E-Transfer</div>
+          <div class="pill" onclick="selM(this,'Other')">Other</div>
+        </div>
+      </div>
+      <div><label>Notes (optional)</label><textarea id="notes" placeholder="e.g. Includes parking." oninput="upd()"></textarea></div>
+    </div>
+  </div>
+
+  <!-- RECEIPT PREVIEW -->
+  <div class="receipt-preview">
+    <div class="perf"></div>
+    <div class="ri">
+      <div class="rhead">
+        <div class="kitty-logo">
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="22,42 30,20 42,42" fill="#fce7f3" stroke="#f9a8d4" stroke-width="1.5" stroke-linejoin="round"/>
+            <polygon points="58,42 70,20 78,42" fill="#fce7f3" stroke="#f9a8d4" stroke-width="1.5" stroke-linejoin="round"/>
+            <polygon points="26,41 31,24 39,41" fill="#f9a8d4"/>
+            <polygon points="61,41 70,24 75,41" fill="#f9a8d4"/>
+            <ellipse cx="50" cy="60" rx="32" ry="29" fill="white" stroke="#f9a8d4" stroke-width="1.5"/>
+            <ellipse cx="39" cy="56" rx="4.5" ry="5" fill="#4a1942"/>
+            <ellipse cx="61" cy="56" rx="4.5" ry="5" fill="#4a1942"/>
+            <circle cx="41" cy="54" r="1.8" fill="white"/>
+            <circle cx="63" cy="54" r="1.8" fill="white"/>
+            <ellipse cx="50" cy="64.5" rx="3" ry="2" fill="#f472b6"/>
+            <line x1="18" y1="62" x2="39" y2="64" stroke="#e879f9" stroke-width="1.2" stroke-linecap="round"/>
+            <line x1="18" y1="67" x2="39" y2="66.5" stroke="#e879f9" stroke-width="1.2" stroke-linecap="round"/>
+            <line x1="61" y1="64" x2="82" y2="62" stroke="#e879f9" stroke-width="1.2" stroke-linecap="round"/>
+            <line x1="61" y1="66.5" x2="82" y2="67" stroke="#e879f9" stroke-width="1.2" stroke-linecap="round"/>
+            <ellipse cx="33" cy="70" rx="8" ry="5" fill="#fda4af" opacity="0.45"/>
+            <ellipse cx="67" cy="70" rx="8" ry="5" fill="#fda4af" opacity="0.45"/>
+            <g transform="translate(70,30)">
+              <ellipse cx="-9" cy="0" rx="10" ry="6.5" fill="#db2777" transform="rotate(-15,-9,0)"/>
+              <ellipse cx="9" cy="0" rx="10" ry="6.5" fill="#db2777" transform="rotate(15,9,0)"/>
+              <circle cx="0" cy="0" r="5.5" fill="#f472b6"/>
+              <circle cx="0" cy="0" r="2.5" fill="#fce7f3"/>
+            </g>
+          </svg>
+        </div>
+        <div class="rcompany" id="r-landlord">Sunrise Property Management</div>
+        <div class="rbadge">🎀 Cash Receipt 🎀</div>
+      </div>
+      <div class="rmeta"><div>Invoice # <span id="r-invoice">2024-001</span></div><div>Date: <span id="r-date">—</span></div></div>
+      <div class="rrow"><span class="rl">Received From</span><span class="rv" id="r-tenant">Jane Smith</span></div>
+      <div class="rrow"><span class="rl">Property</span><span class="rv" id="r-address">123 Main St, Apt 4B</span></div>
+      <div class="rrow"><span class="rl">Rental Period</span><span class="rv" id="r-period">—</span></div>
+      <div class="rrow"><span class="rl">Payment Method</span><span class="rv" id="r-method">Cash</span></div>
+      <div class="totalbox"><span class="tlbl">Amount Paid</span><span class="tamt" id="r-amount">$1,200.00</span></div>
+      <div class="paid">✓ Payment Received</div>
+      <div class="rnotes" id="r-notes-wrap" style="display:none"><span id="r-notes"></span></div>
+      <div class="sigline">Authorized Signature</div>
+      <div class="rfooter">This receipt confirms payment received in full.<br>Please retain for your records. 🎀</div>
+    </div>
+  </div>
+
+  <!-- GENERATE PDF -->
+  <button class="btn-main" onclick="generatePDF()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    Generate Receipt PDF
+  </button>
+
+  <!-- SEND SECTION -->
+  <div class="send-card">
+    <div class="card-title">📨 Send Receipt to Tenant</div>
+
+    <div class="field-group">
+      <div>
+        <label>Tenant Phone (for Text)</label>
+        <input type="tel" id="tenant-phone" placeholder="+1 (204) 555-0123" inputmode="tel" autocomplete="tel">
+      </div>
+      <div>
+        <label>Tenant Email</label>
+        <input type="email" id="tenant-email" placeholder="tenant@email.com" autocomplete="email">
+      </div>
+    </div>
+
+    <!-- iOS SHARE SHEET BUTTON -->
+    <div style="margin-top:14px;">
+      <button class="btn-share-big" onclick="nativeShare(null)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+          <polyline points="16 6 12 2 8 6"/>
+          <line x1="12" y1="2" x2="12" y2="15"/>
+        </svg>
+        Share Receipt via…
+      </button>
+
+      <!-- App chips showing what share sheet supports -->
+      <div class="share-apps-row">
+        <div class="app-chip"><span>💬</span>iMessage</div>
+        <div class="app-chip"><span>💚</span>WhatsApp</div>
+        <div class="app-chip"><span>💙</span>Messenger</div>
+        <div class="app-chip"><span>🎮</span>Discord</div>
+        <div class="app-chip"><span>+more</span></div>
+      </div>
+
+      <div class="share-info">
+        ⚠️ <strong>Important:</strong> "Share via…" only works when this file is open in <strong>Safari or Chrome directly</strong> — not inside the Claude app preview. Save the file to your phone and open it in your browser for the full share sheet.
+      </div>
+
+      <div class="divider-row">
+        <div class="divider-line"></div>
+        <div class="divider-txt">or send directly</div>
+        <div class="divider-line"></div>
+      </div>
+
+      <div class="send-row">
+        <button class="btn-sms" onclick="sendSMS(null)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Text Tenant
+        </button>
+        <button class="btn-email" onclick="sendEmail(null)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          Gmail
+        </button>
+      </div>
+      <p class="send-note">💬 Text opens iMessage · 📧 Gmail opens Gmail app (falls back to Mail if not installed)</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════ LEDGER PANEL ══════════ -->
+<div class="panel" id="panel-ledger">
+  <div class="card">
+    <div class="ledger-top">
+      <h2>📒 Payment Ledger</h2>
+      <div class="btn-acts">
+        <button class="bsm bex" onclick="exportLedger()">Export PDF</button>
+        <button class="bsm bcl" onclick="askClearAll()">Clear All</button>
+      </div>
+    </div>
+    <div class="sum-grid">
+      <div class="scard"><div class="sval" id="s-total">$0.00</div><div class="slbl">Collected</div></div>
+      <div class="scard"><div class="sval" id="s-count">0</div><div class="slbl">Receipts</div></div>
+      <div class="scard"><div class="sval" id="s-last">—</div><div class="slbl">Last Payment</div></div>
+    </div>
+    <div id="l-empty" class="lempty">🎀 No entries yet.<br>Generate a receipt to log it here!</div>
+    <div id="l-entries"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-bg" id="modal-bg" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-icon" id="m-icon">⚠️</div>
+    <h3 id="m-title">Are you sure?</h3>
+    <p id="m-msg"></p>
+    <div class="modal-btns">
+      <button class="mbtn cancel" onclick="closeModal()">Cancel</button>
+      <button class="mbtn danger" id="m-ok" onclick="doModal()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-bg" id="edit-bg" onclick="if(event.target===this)closeEdit()">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div style="font-size:1.05rem;font-weight:700;color:var(--ink);margin-bottom:16px;text-align:center;">✏️ Edit Transaction</div>
+    <div class="edit-fields">
+      <div class="edit-r2">
+        <div><label>Invoice #</label><input type="text" id="e-invoice"></div>
+        <div><label>Date</label><input type="date" id="e-date"></div>
+      </div>
+      <div><label>Tenant Name</label><input type="text" id="e-tenant"></div>
+      <div><label>Property Address</label><input type="text" id="e-address"></div>
+      <div class="edit-r2">
+        <div><label>Amount ($)</label><input type="number" id="e-amount" inputmode="decimal"></div>
+        <div><label>Period</label><input type="text" id="e-period"></div>
+      </div>
+      <div><label>Payment Method</label>
+        <select id="e-method"><option>Cash</option><option>Cheque</option><option>E-Transfer</option><option>Other</option></select>
+      </div>
+      <div><label>Landlord</label><input type="text" id="e-landlord"></div>
+      <div class="edit-r2">
+        <div><label>Phone</label><input type="tel" id="e-phone" inputmode="tel"></div>
+        <div><label>Email</label><input type="email" id="e-email"></div>
+      </div>
+      <div><label>Notes</label><textarea id="e-notes" style="min-height:48px;font-size:15px;resize:none;"></textarea></div>
+    </div>
+    <div class="modal-btns">
+      <button class="mbtn cancel" onclick="closeEdit()">Cancel</button>
+      <button class="mbtn save" onclick="saveEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── STORAGE ────────────────────────────────────────────────────
+const SK = 'rentalLedgerV7';
+function loadLedger(){try{const r=localStorage.getItem(SK);if(!r)return[];const p=JSON.parse(r);return Array.isArray(p)?p:[];}catch(e){return[];}}
+function saveLedger(){try{localStorage.setItem(SK,JSON.stringify(ledger));}catch(e){}}
+let ledger = loadLedger();
+
+// ── CONFIRM MODAL ──────────────────────────────────────────────
+let _cb=null;
+function openModal(icon,title,msg,btnTxt,cb){document.getElementById('m-icon').textContent=icon;document.getElementById('m-title').textContent=title;document.getElementById('m-msg').textContent=msg;document.getElementById('m-ok').textContent=btnTxt;_cb=cb;document.getElementById('modal-bg').classList.add('open');}
+function closeModal(){document.getElementById('modal-bg').classList.remove('open');_cb=null;}
+function doModal(){const cb=_cb;closeModal();if(cb)cb();}
+
+function askClearAll(){
+  if(!ledger.length){showToast('Ledger is already empty!');return;}
+  openModal('🗑️','Clear all entries?',ledger.length+' record'+(ledger.length!==1?'s':'')+' will be permanently deleted.','Clear All',()=>{ledger=[];saveLedger();renderLedger();showToast('✓ Ledger cleared');});
+}
+function askDel(id){
+  const e=ledger.find(x=>x.id===id);if(!e)return;
+  openModal('🗑️','Delete this entry?',e.tenant+' — '+e.date+' — '+fmt(e.amount),'Delete',()=>{ledger=ledger.filter(x=>x.id!==id);saveLedger();renderLedger();showToast('✓ Entry deleted');});
+}
+
+// ── EDIT MODAL ─────────────────────────────────────────────────
+let _editId=null;
+function openEdit(id){
+  const e=ledger.find(x=>x.id===id);if(!e)return;
+  _editId=id;
+  document.getElementById('e-invoice').value=e.invoice||'';
+  document.getElementById('e-date').value=e.rawDate||'';
+  document.getElementById('e-tenant').value=e.tenant||'';
+  document.getElementById('e-address').value=e.address||'';
+  document.getElementById('e-amount').value=e.amount||'';
+  document.getElementById('e-period').value=e.period||'';
+  document.getElementById('e-method').value=e.method||'Cash';
+  document.getElementById('e-landlord').value=e.landlord||'';
+  document.getElementById('e-phone').value=e.tenantPhone||'';
+  document.getElementById('e-email').value=e.tenantEmail||'';
+  document.getElementById('e-notes').value=e.notes||'';
+  document.getElementById('edit-bg').classList.add('open');
+}
+function closeEdit(){document.getElementById('edit-bg').classList.remove('open');_editId=null;}
+function saveEdit(){
+  if(!_editId)return;
+  const idx=ledger.findIndex(x=>x.id===_editId);if(idx<0)return;
+  const rawDate=document.getElementById('e-date').value;
+  ledger[idx]={...ledger[idx],
+    invoice:document.getElementById('e-invoice').value,rawDate,date:fmtD(rawDate),
+    tenant:document.getElementById('e-tenant').value,address:document.getElementById('e-address').value,
+    amount:document.getElementById('e-amount').value,period:document.getElementById('e-period').value,
+    method:document.getElementById('e-method').value,landlord:document.getElementById('e-landlord').value,
+    tenantPhone:document.getElementById('e-phone').value,tenantEmail:document.getElementById('e-email').value,
+    notes:document.getElementById('e-notes').value,
+  };
+  saveLedger();closeEdit();renderLedger();showToast('✓ Entry updated');
+}
+
+// ── TOAST ──────────────────────────────────────────────────────
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+
+// ── TABS ───────────────────────────────────────────────────────
+function showTab(name){
+  ['receipt','ledger'].forEach(n=>{document.getElementById('tab-'+n).classList.toggle('active',n===name);document.getElementById('panel-'+n).classList.toggle('active',n===name);});
+  if(name==='ledger')renderLedger();
+}
+
+// ── METHOD ─────────────────────────────────────────────────────
+let method='Cash';
+function selM(el,m){method=m;document.querySelectorAll('.pill').forEach(p=>p.classList.remove('on'));el.classList.add('on');upd();}
+
+// ── HELPERS ────────────────────────────────────────────────────
+function fmt(v){const n=parseFloat(v);if(isNaN(n))return'$0.00';return'$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fmtD(d){if(!d)return'—';const[y,m,day]=d.split('-');return['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]+' '+parseInt(day)+', '+y;}
+function g(id){return document.getElementById(id).value;}
+
+// ── DEFAULTS ───────────────────────────────────────────────────
+document.getElementById('date').value=new Date().toISOString().split('T')[0];
+document.getElementById('period').value=new Date().toLocaleString('default',{month:'long',year:'numeric'});
+
+// ── LIVE PREVIEW ───────────────────────────────────────────────
+function upd(){
+  document.getElementById('r-landlord').textContent=g('landlord')||'Landlord';
+  document.getElementById('r-invoice').textContent=g('invoice')||'—';
+  document.getElementById('r-date').textContent=fmtD(g('date'));
+  document.getElementById('r-tenant').textContent=g('tenant')||'—';
+  document.getElementById('r-address').textContent=g('address')||'—';
+  document.getElementById('r-period').textContent=g('period')||'—';
+  document.getElementById('r-method').textContent=method;
+  document.getElementById('r-amount').textContent=fmt(g('amount'));
+  const n=g('notes').trim();
+  document.getElementById('r-notes').textContent=n;
+  document.getElementById('r-notes-wrap').style.display=n?'block':'none';
+}
+upd();
+
+// ── BUILD RECEIPT TEXT ─────────────────────────────────────────
+function buildText(d){
+  const landlord=d?d.landlord:(g('landlord')||'—');
+  const address=d?d.address:(g('address')||'—');
+  const tenant=d?d.tenant:(g('tenant')||'—');
+  const invoice=d?d.invoice:(g('invoice')||'—');
+  const date=d?d.date:fmtD(g('date'));
+  const period=d?d.period:(g('period')||'—');
+  const meth=d?d.method:method;
+  const amount=d?fmt(d.amount):fmt(g('amount'));
+  const notes=d?(d.notes||''):g('notes').trim();
+  return[
+    '🎀 RENTAL PAYMENT RECEIPT',
+    '─────────────────────────',
+    'Landlord: '+landlord,
+    'Property: '+address,
+    '',
+    'Tenant:    '+tenant,
+    'Invoice #: '+invoice,
+    'Date:      '+date,
+    'Period:    '+period,
+    'Method:    '+meth,
+    '',
+    'AMOUNT PAID: '+amount,
+    '─────────────────────────',
+    '✓ Payment Received',
+    notes?'Notes: '+notes:'',
+    '',
+    'Thank you for your payment! 🎀'
+  ].filter(Boolean).join('\n');
+}
+
+// ── NATIVE SHARE SHEET (WhatsApp, Discord, Messenger, etc.) ────
+// Works in Safari/Chrome when file is opened directly on device.
+// Inside Claude's iframe it falls back to clipboard.
+async function nativeShare(entryData){
+  const text=buildText(entryData);
+  const title='🎀 Rental Receipt — '+(entryData?entryData.tenant:g('tenant'));
+
+  if(navigator.share){
+    try{
+      await navigator.share({title,text});
+      showToast('✓ Receipt shared!');
+      return;
+    }catch(err){
+      if(err.name==='AbortError')return; // user cancelled — fine
+      // any other error: fall through to clipboard
+    }
+  }
+  // Fallback: copy to clipboard so user can paste into any app
+  try{
+    await navigator.clipboard.writeText(text);
+    showToast('📋 Copied! Paste into WhatsApp / Discord / any app');
+  }catch(e){
+    showToast('Open in Safari/Chrome for full share options');
+  }
+}
+
+// ── SMS ────────────────────────────────────────────────────────
+function sendSMS(d){
+  const phone=(d?d.tenantPhone:g('tenant-phone')).replace(/\s+/g,'');
+  const body=encodeURIComponent(buildText(d));
+  window.location.href=phone?'sms:'+phone+'&body='+body:'sms:?body='+body;
+}
+
+// ── EMAIL VIA GMAIL ────────────────────────────────────────────
+// Uses Gmail's URL scheme which opens the Gmail app on iPhone.
+// googlegmail:// opens Gmail app; falls back to mailto: if not installed.
+function sendEmail(d){
+  const email   = d ? d.tenantEmail : g('tenant-email');
+  const invoice = d ? d.invoice     : g('invoice');
+  const period  = d ? d.period      : g('period');
+  const subject = encodeURIComponent('🎀 Rental Receipt — '+(period||fmtD(g('date')))+' — Invoice #'+invoice);
+  const body    = encodeURIComponent(buildText(d));
+  const to      = encodeURIComponent(email);
+
+  // Gmail app URL scheme (iOS & Android)
+  const gmailURL = 'googlegmail://co?to='+to+'&subject='+subject+'&body='+body;
+
+  // Try Gmail app first — if not installed iPhone will silently fail,
+  // so we set a short timeout and fall back to mailto: (default Mail app)
+  let opened = false;
+  const fallback = setTimeout(()=>{
+    if(!opened) window.location.href = 'mailto:'+email+'?subject='+subject+'&body='+body;
+  }, 1500);
+
+  // Use an invisible iframe to attempt the Gmail URL without navigating away
+  const iframe = document.createElement('iframe');
+  iframe.style.display = 'none';
+  iframe.src = gmailURL;
+  document.body.appendChild(iframe);
+  setTimeout(()=>{ document.body.removeChild(iframe); }, 2000);
+
+  // Listen for blur — means the Gmail app actually opened
+  window.addEventListener('blur', function onBlur(){
+    opened = true;
+    clearTimeout(fallback);
+    window.removeEventListener('blur', onBlur);
+  }, {once:true});
+}
+
+// ── DRAW CAT ───────────────────────────────────────────────────
+function drawCat(doc,cx,topY){
+  const s=.28,sx=x=>cx-14+x*s,sy=y=>topY+y*s;
+  doc.setFillColor(252,231,243);doc.setDrawColor(249,168,212);doc.setLineWidth(.4);
+  doc.triangle(sx(22),sy(42),sx(30),sy(20),sx(42),sy(42),'FD');doc.triangle(sx(58),sy(42),sx(70),sy(20),sx(78),sy(42),'FD');
+  doc.setFillColor(249,168,212);doc.triangle(sx(26),sy(41),sx(31),sy(24),sx(39),sy(41),'F');doc.triangle(sx(61),sy(41),sx(70),sy(24),sx(75),sy(41),'F');
+  doc.setFillColor(255,255,255);doc.setDrawColor(249,168,212);doc.ellipse(sx(50),sy(60),32*s,29*s,'FD');
+  doc.setFillColor(74,25,66);doc.ellipse(sx(39),sy(56),4.5*s,5*s,'F');doc.ellipse(sx(61),sy(56),4.5*s,5*s,'F');
+  doc.setFillColor(255,255,255);doc.circle(sx(41),sy(54),1.8*s,'F');doc.circle(sx(63),sy(54),1.8*s,'F');
+  doc.setFillColor(244,114,182);doc.ellipse(sx(50),sy(64.5),3*s,2*s,'F');
+  doc.setDrawColor(232,121,249);doc.setLineWidth(.3);
+  doc.line(sx(18),sy(62),sx(39),sy(64));doc.line(sx(18),sy(67),sx(39),sy(66.5));
+  doc.line(sx(61),sy(64),sx(82),sy(62));doc.line(sx(61),sy(66.5),sx(82),sy(67));
+  doc.setFillColor(253,164,175);doc.ellipse(sx(33),sy(70),8*s,5*s,'F');doc.ellipse(sx(67),sy(70),8*s,5*s,'F');
+  const bx=sx(70),by=sy(30);
+  doc.setFillColor(219,39,119);doc.ellipse(bx-9*s,by,10*s,6.5*s,'F');doc.ellipse(bx+9*s,by,10*s,6.5*s,'F');
+  doc.setFillColor(244,114,182);doc.circle(bx,by,5.5*s,'F');
+  doc.setFillColor(252,231,243);doc.circle(bx,by,2.5*s,'F');
+}
+
+// ── OPEN PDF ───────────────────────────────────────────────────
+function openPDF(doc,name){
+  const uri=doc.output('datauristring');
+  const w=window.open('','_blank');
+  if(w){w.document.write('<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width"><title>'+name+'</title><style>*{margin:0;padding:0;box-sizing:border-box}body{background:#1a1a1a;display:flex;flex-direction:column;height:100vh}iframe{flex:1;border:none;width:100%}</style></head><body><iframe src="'+uri+'"></iframe></body></html>');w.document.close();}
+  else{const a=document.createElement('a');a.href=uri;a.download=name;a.target='_blank';document.body.appendChild(a);a.click();document.body.removeChild(a);}
+}
+
+// ── BUILD PDF ──────────────────────────────────────────────────
+function buildPDF(d){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'mm',format:'a5',orientation:'portrait'});
+  const landlord=d?d.landlord:(g('landlord')||'Landlord');
+  const invoice=d?d.invoice:(g('invoice')||'—');
+  const date=d?d.date:fmtD(g('date'));
+  const tenant=d?d.tenant:(g('tenant')||'—');
+  const address=d?d.address:(g('address')||'—');
+  const period=d?d.period:(g('period')||'—');
+  const meth=d?d.method:method;
+  const amount=d?fmt(d.amount):fmt(g('amount'));
+  const notes=d?(d.notes||''):g('notes').trim();
+  const W=148,M=16;let y=0;
+  doc.setFillColor(244,114,182);doc.rect(0,0,W*.6,50,'F');
+  doc.setFillColor(168,85,247);doc.rect(W*.45,0,W*.55,50,'F');
+  doc.setFillColor(219,39,119);doc.rect(W*.38,0,W*.26,50,'F');
+  drawCat(doc,W/2,2);
+  doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(255,255,255);
+  doc.text(landlord,W/2,44,{align:'center'});
+  y=58;
+  doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(168,85,247);
+  doc.text('Invoice #  '+invoice,M,y);doc.text('Date:  '+date,W-M,y,{align:'right'});
+  y+=5;doc.setDrawColor(240,171,220);doc.setLineWidth(.3);doc.setLineDash([1,1]);doc.line(M,y,W-M,y);doc.setLineDash([]);y+=7;
+  [['Received From',tenant],['Property',address],['Rental Period',period],['Payment Method',meth]].forEach(([l,v])=>{
+    doc.setFont('helvetica','normal');doc.setTextColor(192,132,184);doc.setFontSize(7.5);doc.text(l,M,y);
+    doc.setFont('helvetica','bold');doc.setTextColor(74,25,66);doc.setFontSize(8);doc.text(v,W-M,y,{align:'right',maxWidth:70});
+    y+=2;doc.setDrawColor(240,171,220);doc.setLineDash([1,1]);doc.line(M,y+3,W-M,y+3);doc.setLineDash([]);y+=8;
+  });
+  y+=2;
+  doc.setFillColor(219,39,119);doc.roundedRect(M,y,W-M*2,16,4,4,'F');
+  doc.setFillColor(126,34,206);doc.roundedRect(M+(W-M*2)*.5,y,(W-M*2)*.5,16,4,4,'F');
+  doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(255,220,240);doc.setCharSpace(1.5);
+  doc.text('AMOUNT PAID',M+5,y+9.5);doc.setCharSpace(0);
+  doc.setFontSize(16);doc.setTextColor(255,255,255);doc.text(amount,W-M-4,y+10.5,{align:'right'});
+  y+=22;
+  doc.setDrawColor(126,34,206);doc.setLineWidth(.6);doc.roundedRect(M,y,W-M*2,10,2,2,'S');
+  doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(126,34,206);doc.setCharSpace(2.5);
+  doc.text('* PAYMENT RECEIVED *',W/2,y+6.5,{align:'center'});doc.setCharSpace(0);y+=16;
+  if(notes){doc.setFont('helvetica','italic');doc.setFontSize(7.5);doc.setTextColor(168,85,247);const lines=doc.splitTextToSize('Notes: '+notes,W-M*2);doc.text(lines,M,y);y+=lines.length*4.5+4;}
+  y+=3;doc.setDrawColor(240,171,220);doc.setLineDash([1.5,1.5]);doc.line(M,y,W-M,y);doc.setLineDash([]);y+=8;
+  doc.setDrawColor(244,114,182);doc.setLineWidth(.5);doc.line(W/2-28,y+4,W/2+28,y+4);
+  doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(192,132,184);
+  doc.text('Authorized Signature',W/2,y+9,{align:'center'});y+=16;
+  doc.setFontSize(6.5);doc.text('This receipt confirms payment received in full. Please retain for your records.',W/2,y,{align:'center'});
+  return {doc,invoice,tenant};
+}
+
+// ── GENERATE NEW RECEIPT ────────────────────────────────────────
+function generatePDF(){
+  const {doc,invoice,tenant}=buildPDF(null);
+  openPDF(doc,'Receipt_'+invoice+'_'+(tenant||'tenant').replace(/\s+/g,'_')+'.pdf');
+  ledger.push({
+    id:Date.now(),invoice:g('invoice'),date:fmtD(g('date')),rawDate:g('date'),
+    tenant:g('tenant'),address:g('address'),period:g('period'),
+    method,amount:g('amount'),notes:g('notes'),landlord:g('landlord'),
+    tenantPhone:g('tenant-phone'),tenantEmail:g('tenant-email'),
+  });
+  saveLedger();
+  showToast('✓ Logged to Ledger!');
+  const inv=g('invoice'),match=inv.match(/^(.*?)(\d+)$/);
+  if(match){document.getElementById('invoice').value=match[1]+String(parseInt(match[2])+1).padStart(match[2].length,'0');upd();}
+}
+
+// ── RENDER LEDGER ──────────────────────────────────────────────
+function renderLedger(){
+  ledger=loadLedger();
+  const empty=document.getElementById('l-empty');
+  const entries=document.getElementById('l-entries');
+  if(!ledger.length){
+    empty.style.display='block';entries.innerHTML='';
+    document.getElementById('s-total').textContent='$0.00';
+    document.getElementById('s-count').textContent='0';
+    document.getElementById('s-last').textContent='—';
+    return;
+  }
+  empty.style.display='none';
+  let run=0;entries.innerHTML='';
+  ledger.forEach((e,i)=>{
+    run+=parseFloat(e.amount)||0;
+    const hasSMS=!!(e.tenantPhone&&e.tenantPhone.trim());
+    const hasEmail=!!(e.tenantEmail&&e.tenantEmail.trim());
+    const div=document.createElement('div');
+    div.className='lentry';
+    div.innerHTML=`
+      <div class="le-top">
+        <span class="le-num">#${i+1} · ${e.invoice||'—'}</span>
+        <div class="le-actions">
+          <button class="le-btn le-edit" onclick="openEdit(${e.id})">✏️</button>
+          <button class="le-btn le-del" onclick="askDel(${e.id})">🗑️</button>
+        </div>
+      </div>
+      <div class="le-fields">
+        <div class="le-field"><span class="le-label">Tenant</span><span class="le-val">${e.tenant||'—'}</span></div>
+        <div class="le-field"><span class="le-label">Date</span><span class="le-val">${e.date||'—'}</span></div>
+        <div class="le-field"><span class="le-label">Period</span><span class="le-val">${e.period||'—'}</span></div>
+        <div class="le-field"><span class="le-label">Method</span><span class="le-val">${e.method||'—'}</span></div>
+      </div>
+      <div class="le-bottom">
+        <span class="le-amount">${fmt(e.amount)}</span>
+        <span class="le-running">Running total: ${fmt(run)}</span>
+      </div>
+      ${e.notes?`<div class="le-notes">📝 ${e.notes}</div>`:''}
+      <div class="le-send-section">
+        <div class="le-send-label">📨 Resend Receipt</div>
+        <button class="le-share-btn" onclick="nativeShare(ledger.find(x=>x.id===${e.id}))">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+            <polyline points="16 6 12 2 8 6"/>
+            <line x1="12" y1="2" x2="12" y2="15"/>
+          </svg>
+          Share via WhatsApp, iMessage, Discord…
+        </button>
+        <div class="le-sub-row">
+          <button class="le-sms" onclick="sendSMS(ledger.find(x=>x.id===${e.id}))">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            ${hasSMS?'Text '+e.tenantPhone:'Text'}
+          </button>
+          <button class="le-mail" onclick="sendEmail(ledger.find(x=>x.id===${e.id}))">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            ${hasEmail?'Gmail '+e.tenantEmail.split('@')[0]:'Gmail'}
+          </button>
+        </div>
+      </div>
+    `;
+    entries.appendChild(div);
+  });
+  const total=ledger.reduce((s,e)=>s+(parseFloat(e.amount)||0),0);
+  document.getElementById('s-total').textContent=fmt(total);
+  document.getElementById('s-count').textContent=ledger.length;
+  document.getElementById('s-last').textContent=ledger[ledger.length-1]?.date||'—';
+}
+
+// ── EXPORT LEDGER PDF ──────────────────────────────────────────
+function exportLedger(){
+  if(!ledger.length){showToast('No entries to export!');return;}
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'mm',format:'a4',orientation:'portrait'});
+  const W=210,M=14;let y=0;
+  doc.setFillColor(219,39,119);doc.rect(0,0,W,28,'F');
+  doc.setFillColor(126,34,206);doc.rect(W*.5,0,W*.5,28,'F');
+  doc.setFillColor(168,85,247);doc.rect(W*.38,0,W*.24,28,'F');
+  doc.setFont('helvetica','bold');doc.setFontSize(15);doc.setTextColor(255,255,255);
+  doc.text('Rental Payment Ledger',W/2,12,{align:'center'});
+  doc.setFontSize(8);doc.setTextColor(255,220,240);
+  doc.text('Exported: '+new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}),W/2,21,{align:'center'});
+  y=36;
+  const total=ledger.reduce((s,e)=>s+(parseFloat(e.amount)||0),0);
+  doc.setFillColor(253,242,248);doc.roundedRect(M,y,W-M*2,12,3,3,'F');
+  doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(126,34,206);
+  doc.text('Total Receipts: '+ledger.length,M+5,y+5.5);doc.text('Total Collected: '+fmt(total),M+5,y+10.5);
+  if(ledger[0]?.landlord){doc.setTextColor(219,39,119);doc.text('Landlord: '+ledger[0].landlord,W-M-5,y+8,{align:'right'});}
+  y+=18;
+  const cols=[{l:'#',w:8},{l:'Invoice',w:22},{l:'Date',w:22},{l:'Tenant',w:36},{l:'Period',w:24},{l:'Method',w:22},{l:'Amount',w:24},{l:'Running Total',w:28}];
+  doc.setFillColor(252,231,243);doc.rect(M,y,W-M*2,8,'F');
+  let cx=M;cols.forEach(c=>{doc.setFont('helvetica','bold');doc.setFontSize(6.5);doc.setTextColor(126,34,206);doc.text(c.l,cx+1,y+5.5);cx+=c.w;});
+  y+=8;let run=0;
+  ledger.forEach((e,i)=>{
+    run+=parseFloat(e.amount)||0;
+    if(i%2===0){doc.setFillColor(253,242,248);doc.rect(M,y,W-M*2,7,'F');}
+    cx=M;
+    [String(i+1),e.invoice||'—',e.date||'—',e.tenant||'—',e.period||'—',e.method||'—',fmt(e.amount),fmt(run)].forEach((v,vi)=>{
+      doc.setFont('helvetica',vi>=6?'bold':'normal');doc.setFontSize(7);
+      doc.setTextColor(vi>=6?126:74,vi>=6?34:25,vi>=6?206:66);
+      doc.text(String(v),cx+1,y+5,{maxWidth:cols[vi].w-2});cx+=cols[vi].w;
+    });
+    doc.setDrawColor(240,171,220);doc.setLineWidth(.2);doc.line(M,y+7,W-M,y+7);y+=7;if(y>270){doc.addPage();y=20;}
+  });
+  y+=8;
+  doc.setFillColor(219,39,119);doc.roundedRect(M,y,W-M*2,10,3,3,'F');
+  doc.setFillColor(126,34,206);doc.roundedRect(M+(W-M*2)*.55,y,(W-M*2)*.45,10,3,3,'F');
+  doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(255,220,240);doc.setCharSpace(1);
+  doc.text('TOTAL COLLECTED',M+5,y+6.5);doc.setCharSpace(0);
+  doc.setFontSize(11);doc.setTextColor(255,255,255);doc.text(fmt(total),W-M-5,y+7,{align:'right'});
+  openPDF(doc,'Rental_Ledger.pdf');
+}
+
+renderLedger();
+</script>
+</body>
+</html>
