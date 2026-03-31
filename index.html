@@ -689,6 +689,7 @@ function openPDF(doc,name){
 function buildPDF(d){
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF({unit:'mm',format:'a5',orientation:'portrait'});
+
   const landlord=d?d.landlord:(g('landlord')||'Landlord');
   const invoice=d?d.invoice:(g('invoice')||'—');
   const date=d?d.date:fmtD(g('date'));
@@ -698,38 +699,151 @@ function buildPDF(d){
   const meth=d?d.method:method;
   const amount=d?fmt(d.amount):fmt(g('amount'));
   const notes=d?(d.notes||''):g('notes').trim();
-  const W=148,M=16;let y=0;
+
+  const W=148, M=16;
+  let y=0;
+
+  // HEADER BG
   doc.setFillColor(244,114,182);doc.rect(0,0,W*.6,50,'F');
   doc.setFillColor(168,85,247);doc.rect(W*.45,0,W*.55,50,'F');
   doc.setFillColor(219,39,119);doc.rect(W*.38,0,W*.26,50,'F');
+
   drawCat(doc,W/2,2);
-  doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(255,255,255);
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(11);
+  doc.setTextColor(255,255,255);
   doc.text(landlord,W/2,44,{align:'center'});
+
   y=58;
-  doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(168,85,247);
-  doc.text('Invoice #  '+invoice,M,y);doc.text('Date:  '+date,W-M,y,{align:'right'});
-  y+=5;doc.setDrawColor(240,171,220);doc.setLineWidth(.3);doc.setLineDash([1,1]);doc.line(M,y,W-M,y);doc.setLineDash([]);y+=7;
-  [['Received From',tenant],['Property',address],['Rental Period',period],['Payment Method',meth]].forEach(([l,v])=>{
-    doc.setFont('helvetica','normal');doc.setTextColor(192,132,184);doc.setFontSize(7.5);doc.text(l,M,y);
-    doc.setFont('helvetica','bold');doc.setTextColor(74,25,66);doc.setFontSize(8);doc.text(v,W-M,y,{align:'right',maxWidth:70});
-    y+=2;doc.setDrawColor(240,171,220);doc.setLineDash([1,1]);doc.line(M,y+3,W-M,y+3);doc.setLineDash([]);y+=8;
+
+  // META
+  doc.setFontSize(8);
+  doc.setFont('helvetica','bold');
+  doc.setTextColor(168,85,247);
+  doc.text('Invoice #  '+invoice,M,y);
+  doc.text('Date:  '+date,W-M,y,{align:'right'});
+
+  y+=5;
+  doc.setDrawColor(240,171,220);
+  doc.setLineWidth(.3);
+  doc.setLineDash([1,1]);
+  doc.line(M,y,W-M,y);
+  doc.setLineDash([]);
+  y+=7;
+
+  // DETAILS
+  [
+    ['Received From',tenant],
+    ['Property',address],
+    ['Rental Period',period],
+    ['Payment Method',meth]
+  ].forEach(([l,v])=>{
+    doc.setFont('helvetica','normal');
+    doc.setTextColor(192,132,184);
+    doc.setFontSize(7.5);
+    doc.text(l,M,y);
+
+    doc.setFont('helvetica','bold');
+    doc.setTextColor(74,25,66);
+    doc.setFontSize(8);
+    doc.text(v,W-M,y,{align:'right',maxWidth:70});
+
+    y+=2;
+    doc.setDrawColor(240,171,220);
+    doc.setLineDash([1,1]);
+    doc.line(M,y+3,W-M,y+3);
+    doc.setLineDash([]);
+    y+=8;
   });
+
   y+=2;
-  doc.setFillColor(219,39,119);doc.roundedRect(M,y,W-M*2,16,4,4,'F');
-  doc.setFillColor(126,34,206);doc.roundedRect(M+(W-M*2)*.5,y,(W-M*2)*.5,16,4,4,'F');
-  doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(255,220,240);doc.setCharSpace(1.5);
-  doc.text('AMOUNT PAID',M+5,y+9.5);doc.setCharSpace(0);
-  doc.setFontSize(16);doc.setTextColor(255,255,255);doc.text(amount,W-M-4,y+10.5,{align:'right'});
+
+  // AMOUNT BOX
+  doc.setFillColor(219,39,119);
+  doc.roundedRect(M,y,W-M*2,16,4,4,'F');
+
+  doc.setFillColor(126,34,206);
+  doc.roundedRect(M+(W-M*2)*.5,y,(W-M*2)*.5,16,4,4,'F');
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(7);
+  doc.setTextColor(255,220,240);
+  doc.setCharSpace(1.5);
+  doc.text('AMOUNT PAID',M+5,y+9.5);
+  doc.setCharSpace(0);
+
+  doc.setFontSize(16);
+  doc.setTextColor(255,255,255);
+  doc.text(amount,W-M-4,y+10.5,{align:'right'});
+
   y+=22;
-  doc.setDrawColor(126,34,206);doc.setLineWidth(.6);doc.roundedRect(M,y,W-M*2,10,2,2,'S');
-  doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(126,34,206);doc.setCharSpace(2.5);
-  doc.text('* PAYMENT RECEIVED *',W/2,y+6.5,{align:'center'});doc.setCharSpace(0);y+=16;
-  if(notes){doc.setFont('helvetica','italic');doc.setFontSize(7.5);doc.setTextColor(168,85,247);const lines=doc.splitTextToSize('Notes: '+notes,W-M*2);doc.text(lines,M,y);y+=lines.length*4.5+4;}
-  y+=3;doc.setDrawColor(240,171,220);doc.setLineDash([1.5,1.5]);doc.line(M,y,W-M,y);doc.setLineDash([]);y+=8;
-  doc.setDrawColor(244,114,182);doc.setLineWidth(.5);doc.line(W/2-28,y+4,W/2+28,y+4);
-  doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(192,132,184);
-  doc.text('Authorized Signature',W/2,y+9,{align:'center'});y+=16;
-  doc.setFontSize(6.5);doc.text('This receipt confirms payment received in full. Please retain for your records.',W/2,y,{align:'center'});
+
+  // PAYMENT RECEIVED BOX
+  doc.setDrawColor(126,34,206);
+  doc.setLineWidth(.6);
+  doc.roundedRect(M,y,W-M*2,10,2,2,'S');
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(8.5);
+  doc.setTextColor(126,34,206);
+
+  const text = '* PAYMENT RECEIVED *';
+  const charSpacing = 2.5;
+
+  const baseWidth = doc.getTextWidth(text);
+  const adjustedWidth = baseWidth + (text.length - 1) * charSpacing;
+
+  // ✅ center INSIDE the box
+  const boxWidth = W - M*2;
+  const x = M + (boxWidth - adjustedWidth) / 2;
+
+  doc.setCharSpace(charSpacing);
+  doc.text(text, x, y + 6.5);
+  doc.setCharSpace(0);
+
+  y+=16;
+
+  // NOTES
+  if(notes){
+    doc.setFont('helvetica','italic');
+    doc.setFontSize(7.5);
+    doc.setTextColor(168,85,247);
+    const lines=doc.splitTextToSize('Notes: '+notes,W-M*2);
+    doc.text(lines,M,y);
+    y+=lines.length*4.5+4;
+  }
+
+  y+=3;
+
+  // FOOTER LINE
+  doc.setDrawColor(240,171,220);
+  doc.setLineDash([1.5,1.5]);
+  doc.line(M,y,W-M,y);
+  doc.setLineDash([]);
+  y+=8;
+
+  // SIGNATURE
+  doc.setDrawColor(244,114,182);
+  doc.setLineWidth(.5);
+  doc.line(W/2-28,y+4,W/2+28,y+4);
+
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(7);
+  doc.setTextColor(192,132,184);
+  doc.text('Authorized Signature',W/2,y+9,{align:'center'});
+
+  y+=16;
+
+  // FINAL NOTE
+  doc.setFontSize(6.5);
+  doc.text(
+    'This receipt confirms payment received in full. Please retain for your records.',
+    W/2,
+    y,
+    {align:'center'}
+  );
+
   return {doc,invoice,tenant};
 }
 
