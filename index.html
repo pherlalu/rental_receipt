@@ -2,981 +2,1867 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="🎀 Receipts">
-<title>🎀 Rental Receipts</title>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="RentReceipt">
+<meta name="theme-color" content="#0d1b2a">
+<title>RentReceipt Pro</title>
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Playfair+Display:wght@700&display=swap');
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-:root{
-  --pink:#f472b6;--pk:#db2777;--pklite:#fce7f3;--pkpale:#fdf2f8;
-  --pur:#a855f7;--purd:#7e22ce;--purlite:#f3e8ff;
-  --bdr:#f0abdc;--muted:#c084b8;--ink:#4a1942;--paper:#fff5fc;
+:root {
+  --navy-deepest: #060d14;
+  --navy-deep: #0d1b2a;
+  --navy-mid: #162840;
+  --navy-surface: #1e3554;
+  --navy-elevated: #243f63;
+  --navy-border: #2d4f78;
+  --navy-muted: #3a6090;
+  --gold: #c9a84c;
+  --gold-light: #e8c76a;
+  --gold-dim: #8a6d2f;
+  --accent: #4e9af1;
+  --accent-dim: #2a6ab5;
+  --success: #3ecf8e;
+  --danger: #f06464;
+  --warning: #f5a623;
+  --text-primary: #f0f4f8;
+  --text-secondary: #8fa8c4;
+  --text-muted: #4e6d8c;
+  --radius: 14px;
+  --radius-sm: 8px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  --shadow-lg: 0 12px 48px rgba(0,0,0,0.6);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
-html{height:-webkit-fill-available;}
-body{
-  font-family:'Quicksand',sans-serif;
-  background:linear-gradient(145deg,#fce7f3,#f3e8ff);
-  min-height:100vh;min-height:-webkit-fill-available;
-  display:flex;flex-direction:column;align-items:center;
-  padding-bottom:60px;overscroll-behavior-y:none;
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  height: 100%;
+  font-family: 'DM Sans', sans-serif;
+  background: var(--navy-deepest);
+  color: var(--text-primary);
+  overflow: hidden;
 }
-.app-header{width:100%;max-width:480px;padding:16px 16px 8px;text-align:center;}
-.app-header h1{font-size:.9rem;font-weight:700;color:var(--purd);letter-spacing:.12em;text-transform:uppercase;}
 
-/* TAB BAR */
-.tab-bar{position:sticky;top:0;z-index:100;width:100%;max-width:480px;background:rgba(255,255,255,.93);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);padding:6px 12px 8px;display:flex;gap:6px;border-bottom:1.5px solid var(--bdr);}
-.tab{flex:1;padding:11px 6px;text-align:center;border-radius:10px;font-size:.85rem;font-weight:700;color:var(--muted);cursor:pointer;user-select:none;transition:all .2s;}
-.tab.active{background:linear-gradient(135deg,var(--pk),var(--purd));color:white;}
-
-.panel{display:none;width:100%;max-width:480px;flex-direction:column;gap:16px;padding:14px 12px;}
-.panel.active{display:flex;}
-
-/* CARDS */
-.card{background:white;border-radius:18px;box-shadow:0 2px 16px rgba(168,85,247,.1),0 0 0 1px var(--bdr);padding:18px 16px;}
-.card-title{font-size:.9rem;font-weight:700;color:var(--muted);margin-bottom:14px;padding-bottom:10px;border-bottom:1.5px dashed var(--bdr);}
-.field-group{display:flex;flex-direction:column;gap:12px;}
-.sec{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--pk);margin-bottom:6px;display:flex;align-items:center;gap:6px;}
-.sec::after{content:'';flex:1;height:1.5px;background:linear-gradient(to right,var(--bdr),transparent);}
-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);display:block;margin-bottom:4px;}
-input[type=text],input[type=date],input[type=number],input[type=tel],input[type=email],textarea,select{
-  width:100%;padding:13px 14px;border:1.5px solid var(--bdr);border-radius:12px;
-  font-family:'Quicksand',sans-serif;font-size:16px;font-weight:600;color:var(--ink);
-  background:var(--pkpale);outline:none;-webkit-appearance:none;appearance:none;
-  transition:border-color .2s,box-shadow .2s;
+/* ── APP SHELL ── */
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  overflow: hidden;
 }
-input:focus,textarea:focus,select:focus{border-color:var(--pur);box-shadow:0 0 0 3px rgba(168,85,247,.15);background:white;}
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-textarea{resize:none;min-height:60px;font-size:15px;}
-.pills{display:flex;gap:8px;flex-wrap:wrap;}
-.pill{padding:9px 16px;border-radius:50px;border:1.5px solid var(--bdr);background:var(--pkpale);font-size:.82rem;font-weight:700;color:var(--muted);cursor:pointer;user-select:none;transition:all .18s;}
-.pill.on{background:linear-gradient(135deg,var(--pink),var(--pur));border-color:transparent;color:white;}
 
-/* RECEIPT PREVIEW */
-.receipt-preview{background:var(--paper);border-radius:4px;box-shadow:0 2px 0 var(--bdr),0 4px 0 #f0c0e8,0 6px 0 var(--bdr),0 8px 20px rgba(168,85,247,.15);overflow:hidden;}
-.perf{height:10px;background-color:var(--pink);background-image:radial-gradient(circle at 10px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 30px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 50px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 70px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 90px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 110px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 130px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 150px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 170px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 190px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 210px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 230px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 250px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 270px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 290px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 310px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 330px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 350px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 370px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 390px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 410px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 430px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 450px 10px,#fce7f3 6px,transparent 6px),radial-gradient(circle at 470px 10px,#fce7f3 6px,transparent 6px);background-size:20px 20px;}
-.ri{padding:18px 20px;}
-.rhead{text-align:center;margin-bottom:16px;padding-bottom:14px;border-bottom:1.5px dashed var(--bdr);}
-.kitty-logo{display:flex;justify-content:center;margin-bottom:8px;}
-.kitty-logo svg{width:68px;height:68px;filter:drop-shadow(0 2px 6px rgba(219,39,119,.25));}
-.rcompany{font-size:1.05rem;font-weight:700;color:var(--ink);}
-.rbadge{display:inline-block;margin-top:5px;padding:3px 14px;background:linear-gradient(135deg,var(--pink),var(--pur));color:white;font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;border-radius:50px;}
-.rmeta{display:flex;justify-content:space-between;margin-bottom:12px;font-size:.76rem;color:var(--muted);font-weight:600;}
-.rmeta span{font-weight:700;color:var(--ink);}
-.rrow{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px dashed var(--bdr);font-size:.85rem;}
-.rrow:last-child{border-bottom:none;}
-.rl{color:var(--muted);font-size:.76rem;font-weight:600;}
-.rv{color:var(--ink);font-weight:700;text-align:right;max-width:58%;}
-.totalbox{margin-top:12px;background:linear-gradient(135deg,var(--pk),var(--purd));border-radius:12px;padding:13px 16px;display:flex;justify-content:space-between;align-items:center;}
-.tlbl{color:rgba(255,255,255,.8);font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;}
-.tamt{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:white;}
-.paid{text-align:center;margin-top:12px;padding:7px;border:2px solid var(--pur);border-radius:8px;color:var(--purd);font-weight:700;font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;background:var(--purlite);}
-.rnotes{margin-top:10px;font-size:.76rem;color:var(--muted);font-style:italic;line-height:1.5;}
-.rfooter{margin-top:12px;padding-top:10px;border-top:1.5px dashed var(--bdr);text-align:center;font-size:.7rem;color:var(--muted);line-height:1.7;font-weight:600;}
-.sigline{margin-top:12px;border-top:1px solid var(--pink);width:60%;margin-left:auto;margin-right:auto;padding-top:5px;font-size:.7rem;color:var(--muted);text-align:center;font-weight:600;}
-
-/* BUTTONS */
-.btn-main{width:100%;padding:17px;background:linear-gradient(135deg,var(--pk),var(--purd));color:white;border:none;border-radius:16px;font-family:'Quicksand',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;box-shadow:0 6px 20px rgba(168,85,247,.28);display:flex;align-items:center;justify-content:center;gap:10px;transition:transform .15s;user-select:none;}
-.btn-main:active{transform:scale(.97);}
-.btn-main svg{width:20px;height:20px;flex-shrink:0;}
-
-/* SEND SECTION */
-.send-card{background:white;border-radius:18px;box-shadow:0 2px 16px rgba(168,85,247,.1),0 0 0 1px var(--bdr);padding:18px 16px;}
-
-/* BIG SHARE BUTTON */
-.btn-share-big{
-  width:100%;padding:18px;border:none;border-radius:16px;
-  background:linear-gradient(135deg,#007aff,#0055d4);
-  color:white;font-family:'Quicksand',sans-serif;font-size:1.05rem;font-weight:700;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;
-  box-shadow:0 6px 22px rgba(0,122,255,.35);transition:transform .15s;user-select:none;
-  margin-bottom:12px;
+/* ── HEADER ── */
+.app-header {
+  background: var(--navy-deep);
+  border-bottom: 1px solid var(--navy-border);
+  padding: calc(var(--safe-top) + 12px) 20px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
 }
-.btn-share-big:active{transform:scale(.97);}
-.btn-share-big svg{width:22px;height:22px;flex-shrink:0;}
 
-.share-apps-row{
-  display:flex;gap:8px;justify-content:center;flex-wrap:wrap;
-  margin-bottom:12px;
+.header-logo {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px;
+  color: var(--gold);
+  letter-spacing: 0.02em;
+  flex: 1;
 }
-.app-chip{
-  display:flex;align-items:center;gap:5px;
-  padding:5px 11px;border-radius:50px;
-  font-size:.72rem;font-weight:700;
-  border:1.5px solid var(--bdr);background:var(--pkpale);color:var(--ink);
+
+.header-logo span { color: var(--text-secondary); font-size: 13px; font-family: 'DM Sans', sans-serif; display: block; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; margin-top: -3px; }
+
+.header-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 22px;
+  cursor: pointer;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: all 0.15s;
 }
-.app-chip span{font-size:.9rem;}
+.header-btn:hover { background: var(--navy-mid); color: var(--text-primary); }
 
-.divider-row{display:flex;align-items:center;gap:10px;margin:12px 0;}
-.divider-line{flex:1;height:1px;background:var(--bdr);}
-.divider-txt{font-size:.7rem;font-weight:700;color:var(--muted);white-space:nowrap;}
-
-/* SMS + EMAIL side by side */
-.send-row{display:flex;gap:10px;}
-.btn-sms{flex:1;padding:14px 8px;border:none;border-radius:14px;background:linear-gradient(135deg,#22c55e,#16a34a);color:white;font-family:'Quicksand',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:transform .15s;user-select:none;}
-.btn-email{flex:1;padding:14px 8px;border:none;border-radius:14px;background:linear-gradient(135deg,#ea4335,#c5221f);color:white;font-family:'Quicksand',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:transform .15s;user-select:none;}
-.btn-sms:active,.btn-email:active{transform:scale(.96);}
-.btn-sms svg,.btn-email svg{width:16px;height:16px;flex-shrink:0;}
-.send-note{font-size:.7rem;color:var(--muted);font-weight:600;line-height:1.6;margin-top:10px;text-align:center;}
-
-/* LEDGER */
-.ledger-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
-.ledger-top h2{font-size:.95rem;font-weight:700;color:var(--ink);}
-.btn-acts{display:flex;gap:8px;}
-.bsm{padding:9px 14px;border-radius:10px;border:none;font-family:'Quicksand',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;transition:all .18s;user-select:none;}
-.bsm:active{transform:scale(.96);}
-.bex{background:linear-gradient(135deg,var(--pink),var(--pur));color:white;}
-.bcl{background:#fee2e2;color:#dc2626;}
-.sum-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;}
-.scard{background:linear-gradient(135deg,var(--pklite),var(--purlite));border-radius:12px;padding:10px 6px;text-align:center;border:1px solid var(--bdr);}
-.sval{font-size:.95rem;font-weight:700;color:var(--ink);}
-.slbl{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-top:2px;}
-.lempty{text-align:center;padding:28px 10px;color:var(--muted);font-size:.88rem;font-weight:600;line-height:1.7;}
-
-/* LEDGER ENTRY CARDS */
-.lentry{background:var(--pkpale);border-radius:14px;border:1.5px solid var(--bdr);padding:12px 14px;margin-bottom:10px;}
-.lentry:last-child{margin-bottom:0;}
-.le-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
-.le-num{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:white;background:linear-gradient(135deg,var(--pink),var(--pur));padding:2px 8px;border-radius:50px;}
-.le-actions{display:flex;gap:6px;}
-.le-btn{width:30px;height:30px;border-radius:8px;border:none;font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s;user-select:none;}
-.le-btn:active{transform:scale(.88);}
-.le-edit{background:var(--purlite);color:var(--purd);}
-.le-del{background:#fee2e2;color:#dc2626;}
-.le-fields{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;font-size:.8rem;}
-.le-field{display:flex;flex-direction:column;gap:2px;}
-.le-label{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);}
-.le-val{font-weight:700;color:var(--ink);}
-.le-bottom{margin-top:10px;display:flex;justify-content:space-between;align-items:center;}
-.le-amount{font-size:1rem;font-weight:700;color:var(--purd);}
-.le-running{font-size:.72rem;color:var(--muted);font-weight:600;}
-.le-notes{margin-top:6px;font-size:.74rem;color:var(--muted);font-style:italic;}
-
-/* LEDGER SEND ROW */
-.le-send-section{margin-top:10px;padding-top:10px;border-top:1px dashed var(--bdr);}
-.le-send-label{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:7px;}
-
-/* Big share button on ledger entry */
-.le-share-btn{
-  width:100%;padding:11px;border:none;border-radius:12px;
-  background:linear-gradient(135deg,#007aff,#0055d4);
-  color:white;font-family:'Quicksand',sans-serif;font-size:.85rem;font-weight:700;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;
-  transition:transform .15s;user-select:none;margin-bottom:8px;
-  box-shadow:0 3px 12px rgba(0,122,255,.25);
+/* ── TAB NAV ── */
+.tab-nav {
+  display: flex;
+  background: var(--navy-deep);
+  border-bottom: 1px solid var(--navy-border);
+  flex-shrink: 0;
 }
-.le-share-btn:active{transform:scale(.96);}
-.le-share-btn svg{width:16px;height:16px;flex-shrink:0;}
 
-.le-sub-row{display:flex;gap:7px;}
-.le-sms{flex:1;padding:9px 6px;border:none;border-radius:10px;background:linear-gradient(135deg,#22c55e,#16a34a);color:white;font-family:'Quicksand',sans-serif;font-size:.76rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:transform .15s;user-select:none;}
-.le-mail{flex:1;padding:9px 6px;border:none;border-radius:10px;background:linear-gradient(135deg,#ea4335,#c5221f);color:white;font-family:'Quicksand',sans-serif;font-size:.76rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:transform .15s;user-select:none;}
-.le-sms:active,.le-mail:active{transform:scale(.95);}
-.le-sms svg,.le-mail svg{width:13px;height:13px;flex-shrink:0;}
+.tab-btn {
+  flex: 1;
+  padding: 13px 8px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s;
+  position: relative;
+}
+.tab-btn .tab-icon { font-size: 20px; }
+.tab-btn.active { color: var(--gold); }
+.tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 20%; right: 20%;
+  height: 2px;
+  background: var(--gold);
+  border-radius: 2px 2px 0 0;
+}
 
-/* TOAST */
-.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);background:linear-gradient(135deg,#16a34a,#15803d);color:white;padding:12px 24px;border-radius:50px;font-family:'Quicksand',sans-serif;font-size:.88rem;font-weight:700;box-shadow:0 4px 20px rgba(0,0,0,.2);transition:transform .35s cubic-bezier(.34,1.56,.64,1);z-index:999;white-space:nowrap;pointer-events:none;}
-.toast.show{transform:translateX(-50%) translateY(0);}
+/* ── CONTENT AREA ── */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(var(--safe-bottom) + 20px);
+}
 
-/* BOTTOM SHEET */
-.modal-bg{display:none;position:fixed;inset:0;background:rgba(74,25,66,.5);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);z-index:500;justify-content:flex-end;flex-direction:column;align-items:center;}
-.modal-bg.open{display:flex;}
-.modal{background:white;border-radius:24px 24px 0 0;padding:20px 20px 48px;width:100%;max-width:480px;animation:slideUp .3s cubic-bezier(.34,1.56,.64,1);max-height:90vh;overflow-y:auto;}
-@keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
-.modal-handle{width:40px;height:4px;background:#e5e7eb;border-radius:4px;margin:0 auto 16px;}
-.modal-icon{font-size:2rem;text-align:center;margin-bottom:8px;}
-.modal h3{font-size:1.05rem;font-weight:700;color:var(--ink);margin-bottom:6px;text-align:center;}
-.modal p{font-size:.85rem;color:var(--muted);font-weight:600;margin-bottom:20px;line-height:1.5;text-align:center;}
-.modal-btns{display:flex;gap:10px;}
-.mbtn{flex:1;padding:15px;border-radius:14px;border:none;font-family:'Quicksand',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;transition:transform .15s;}
-.mbtn:active{transform:scale(.97);}
-.mbtn.cancel{background:#f3f4f6;color:#6b7280;}
-.mbtn.danger{background:linear-gradient(135deg,#ef4444,#dc2626);color:white;}
-.mbtn.save{background:linear-gradient(135deg,var(--pk),var(--purd));color:white;}
-.edit-fields{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
-.edit-fields label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);display:block;margin-bottom:3px;}
-.edit-fields input,.edit-fields select,.edit-fields textarea{width:100%;padding:11px 14px;border:1.5px solid var(--bdr);border-radius:12px;font-family:'Quicksand',sans-serif;font-size:16px;font-weight:600;color:var(--ink);background:var(--pkpale);outline:none;-webkit-appearance:none;appearance:none;}
-.edit-fields input:focus,.edit-fields select:focus,.edit-fields textarea:focus{border-color:var(--pur);box-shadow:0 0 0 3px rgba(168,85,247,.15);background:white;}
-.edit-r2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.view { display: none; }
+.view.active { display: block; }
 
-/* SHARE INFO BOX */
-.share-info{background:var(--purlite);border:1.5px solid #d8b4fe;border-radius:12px;padding:12px 14px;font-size:.78rem;color:var(--purd);font-weight:600;line-height:1.7;margin-top:4px;}
-.share-info strong{color:var(--purd);}
+/* ── SECTION HEADERS ── */
+.section-header {
+  padding: 20px 20px 8px;
+  font-family: 'DM Serif Display', serif;
+  font-size: 26px;
+  color: var(--text-primary);
+}
+.section-sub {
+  padding: 0 20px 16px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* ── CARDS ── */
+.card {
+  margin: 0 16px 12px;
+  background: var(--navy-mid);
+  border: 1px solid var(--navy-border);
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: var(--shadow);
+}
+
+.card-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 15px;
+  color: var(--gold);
+  margin-bottom: 14px;
+  letter-spacing: 0.02em;
+}
+
+/* ── FORM ELEMENTS ── */
+.form-group { margin-bottom: 14px; }
+.form-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+  background: var(--navy-deep);
+  border: 1px solid var(--navy-border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  padding: 12px 14px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  -webkit-appearance: none;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(78,154,241,0.15);
+}
+.form-select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238fa8c4' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 38px; }
+.form-textarea { resize: none; min-height: 80px; }
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* ── AMOUNT INPUT ── */
+.amount-wrapper { position: relative; }
+.amount-prefix {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--gold);
+  font-family: 'DM Mono', monospace;
+  font-weight: 500;
+  font-size: 16px;
+  pointer-events: none;
+}
+.amount-wrapper .form-input { padding-left: 30px; font-family: 'DM Mono', monospace; font-size: 18px; }
+
+/* ── BUTTONS ── */
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 20px;
+  border-radius: var(--radius-sm);
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  width: 100%;
+  letter-spacing: 0.02em;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+  color: var(--navy-deepest);
+}
+.btn-primary:active { transform: scale(0.98); opacity: 0.9; }
+
+.btn-secondary {
+  background: var(--navy-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--navy-border);
+}
+.btn-secondary:active { opacity: 0.8; }
+
+.btn-danger {
+  background: rgba(240,100,100,0.15);
+  color: var(--danger);
+  border: 1px solid rgba(240,100,100,0.3);
+}
+
+.btn-ghost {
+  background: none;
+  color: var(--accent);
+  border: none;
+  padding: 8px 0;
+  width: auto;
+  font-size: 14px;
+}
+
+.btn-sm { padding: 9px 14px; font-size: 13px; width: auto; }
+
+.btn-row { display: flex; gap: 10px; margin-top: 6px; }
+.btn-row .btn { flex: 1; }
+
+/* ── PROPERTY MANAGER ── */
+.property-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--navy-surface);
+  border: 1px solid var(--navy-border);
+  border-radius: 20px;
+  padding: 7px 14px;
+  font-size: 13px;
+  margin: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.property-chip:hover { border-color: var(--accent); }
+.property-chip .chip-del { color: var(--danger); font-size: 16px; line-height: 1; }
+
+/* ── RECEIPT PREVIEW ── */
+#receipt-preview-wrap {
+  display: none;
+  padding: 0 16px;
+}
+
+.receipt-paper {
+  background: #fff;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  color: #1a1a2e;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.receipt-header-bar {
+  background: linear-gradient(135deg, #0d1b2a 0%, #162840 100%);
+  padding: 22px 24px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.receipt-co-name {
+  font-family: 'DM Serif Display', serif;
+  font-size: 20px;
+  color: #c9a84c;
+  line-height: 1.2;
+}
+.receipt-co-sub {
+  font-size: 11px;
+  color: #8fa8c4;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 3px;
+}
+.receipt-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: #8fa8c4;
+  text-align: right;
+  line-height: 1.8;
+}
+.receipt-num strong { color: #c9a84c; font-size: 14px; }
+
+.receipt-body { padding: 20px 24px; }
+
+.receipt-amount-block {
+  text-align: center;
+  padding: 18px 0 16px;
+  border-bottom: 1px solid #e8edf2;
+  margin-bottom: 18px;
+}
+.receipt-amount-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #7a8fa4; margin-bottom: 4px; }
+.receipt-amount-value { font-family: 'DM Mono', monospace; font-size: 38px; font-weight: 500; color: #0d1b2a; line-height: 1; }
+.receipt-amount-value sup { font-size: 18px; vertical-align: super; }
+
+.receipt-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
+  margin-bottom: 14px;
+}
+.receipt-field { }
+.receipt-field-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #7a8fa4; margin-bottom: 2px; }
+.receipt-field-value { font-size: 13px; font-weight: 500; color: #1a1a2e; }
+
+.receipt-full-row { grid-column: 1 / -1; }
+
+.receipt-notes {
+  background: #f5f7fa;
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: #4a5568;
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+.receipt-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.badge-paid { background: rgba(62,207,142,0.15); color: #2da870; border: 1px solid rgba(62,207,142,0.3); }
+.badge-unpaid { background: rgba(245,166,35,0.15); color: #d4891a; border: 1px solid rgba(245,166,35,0.3); }
+
+.receipt-footer {
+  background: #f5f7fa;
+  padding: 14px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #e8edf2;
+}
+.receipt-footer-left { font-size: 11px; color: #9aa5b4; }
+.receipt-footer-right { font-family: 'DM Mono', monospace; font-size: 11px; color: #9aa5b4; }
+
+/* ── SHARE BAR ── */
+.share-bar {
+  display: none;
+  padding: 12px 16px;
+  gap: 10px;
+  flex-direction: column;
+}
+.share-bar.visible { display: flex; }
+
+/* ── LEDGER ── */
+.ledger-toolbar {
+  padding: 12px 16px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.search-input-wrap { flex: 1; position: relative; }
+.search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 16px; pointer-events: none; }
+.ledger-search {
+  width: 100%;
+  background: var(--navy-mid);
+  border: 1px solid var(--navy-border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  padding: 10px 12px 10px 36px;
+  outline: none;
+}
+.ledger-search:focus { border-color: var(--accent); }
+
+.filter-btn {
+  background: var(--navy-mid);
+  border: 1px solid var(--navy-border);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  padding: 10px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.filter-btn.active { border-color: var(--accent); color: var(--accent); }
+
+/* Stats bar */
+.stats-bar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 0 16px 12px;
+}
+.stat-card {
+  background: var(--navy-mid);
+  border: 1px solid var(--navy-border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  text-align: center;
+}
+.stat-value { font-family: 'DM Mono', monospace; font-size: 16px; color: var(--gold); font-weight: 500; }
+.stat-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
+
+/* Ledger items */
+.ledger-list { padding: 0 16px; }
+
+.ledger-item {
+  background: var(--navy-mid);
+  border: 1px solid var(--navy-border);
+  border-radius: var(--radius);
+  margin-bottom: 10px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.ledger-item:hover { border-color: var(--navy-muted); }
+
+.ledger-item-main {
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.ledger-item-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--navy-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.ledger-item-info { flex: 1; min-width: 0; }
+.ledger-item-tenant { font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ledger-item-meta { font-size: 12px; color: var(--text-secondary); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.ledger-item-right { text-align: right; flex-shrink: 0; }
+.ledger-item-amount { font-family: 'DM Mono', monospace; font-size: 16px; font-weight: 500; color: var(--text-primary); }
+.ledger-item-num { font-size: 11px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+
+.ledger-item-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  margin-top: 3px;
+}
+.badge-paid-sm { background: rgba(62,207,142,0.15); color: var(--success); }
+.badge-unpaid-sm { background: rgba(245,166,35,0.15); color: var(--warning); }
+
+.ledger-item-actions {
+  display: none;
+  border-top: 1px solid var(--navy-border);
+  padding: 10px 14px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.ledger-item.expanded .ledger-item-actions { display: flex; }
+.ledger-item.expanded { border-color: var(--navy-muted); }
+
+.ledger-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+}
+.ledger-empty .empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
+.ledger-empty p { font-size: 14px; line-height: 1.6; }
+
+/* ── SETTINGS / PROPERTIES ── */
+.settings-section { margin-bottom: 24px; }
+.settings-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 0 20px 8px;
+}
+
+.settings-row {
+  margin: 0 16px 8px;
+  background: var(--navy-mid);
+  border: 1px solid var(--navy-border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.settings-row-icon { font-size: 20px; width: 28px; text-align: center; flex-shrink: 0; }
+.settings-row-content { flex: 1; }
+.settings-row-label { font-size: 14px; font-weight: 500; }
+.settings-row-sub { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+.settings-row-action { color: var(--text-muted); font-size: 18px; }
+
+/* ── PROPERTY LIST ITEM ── */
+.property-item {
+  margin: 0 16px 8px;
+  background: var(--navy-mid);
+  border: 1px solid var(--navy-border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+}
+.property-item-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+.property-item-name { font-size: 14px; font-weight: 600; }
+.property-item-addr { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.property-item-actions { display: flex; gap: 6px; }
+.icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: var(--text-muted);
+  padding: 4px;
+  border-radius: 6px;
+  transition: all 0.15s;
+}
+.icon-btn:hover { background: var(--navy-surface); }
+.icon-btn.danger:hover { color: var(--danger); }
+
+.tenant-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--navy-surface);
+  border: 1px solid var(--navy-border);
+  border-radius: 12px;
+  padding: 3px 10px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin: 6px 4px 0 0;
+}
+.tenant-tag .tenant-del { color: var(--danger); cursor: pointer; font-size: 14px; margin-left: 2px; }
+
+/* ── MODAL ── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 100;
+  align-items: flex-end;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.open { display: flex; }
+
+.modal-sheet {
+  background: var(--navy-mid);
+  border-radius: 20px 20px 0 0;
+  border: 1px solid var(--navy-border);
+  border-bottom: none;
+  width: 100%;
+  max-width: 600px;
+  padding: 12px 20px calc(var(--safe-bottom) + 24px);
+  max-height: 90dvh;
+  overflow-y: auto;
+  animation: slideUp 0.25s ease;
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+.modal-handle {
+  width: 40px;
+  height: 4px;
+  background: var(--navy-muted);
+  border-radius: 2px;
+  margin: 0 auto 18px;
+}
+.modal-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 20px;
+  margin-bottom: 16px;
+  color: var(--text-primary);
+}
+
+/* ── TOAST ── */
+.toast {
+  position: fixed;
+  top: calc(var(--safe-top) + 70px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  background: var(--navy-surface);
+  border: 1px solid var(--navy-border);
+  border-radius: 20px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  box-shadow: var(--shadow-lg);
+  z-index: 200;
+  opacity: 0;
+  transition: all 0.3s;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── DIVIDER ── */
+.divider {
+  height: 1px;
+  background: var(--navy-border);
+  margin: 16px 0;
+}
+
+/* ── EXPORT BAR ── */
+.export-bar {
+  padding: 0 16px 12px;
+  display: flex;
+  gap: 8px;
+}
+.export-bar .btn { padding: 10px 16px; font-size: 13px; }
+
+/* ── SORT BAR ── */
+.sort-bar {
+  display: flex;
+  gap: 6px;
+  padding: 0 16px 10px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.sort-bar::-webkit-scrollbar { display: none; }
+
+.sort-pill {
+  flex-shrink: 0;
+  background: var(--navy-mid);
+  border: 1px solid var(--navy-border);
+  border-radius: 20px;
+  color: var(--text-secondary);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.sort-pill.active {
+  background: var(--navy-surface);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+.sort-pill .sort-arrow { font-size: 10px; margin-left: 3px; opacity: 0.7; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--navy-muted); border-radius: 2px; }
 </style>
 </head>
 <body>
+<div id="app">
 
-<div class="app-header"><h1>🎀 Rental Receipts 🎀</h1></div>
+  <!-- HEADER -->
+  <div class="app-header">
+    <div class="header-logo">
+      RentReceipt
+      <span>Property Management</span>
+    </div>
 
-<div class="tab-bar">
-  <div class="tab active" id="tab-receipt" onclick="showTab('receipt')">🧾 Receipt</div>
-  <div class="tab" id="tab-ledger" onclick="showTab('ledger')">📒 Ledger</div>
-</div>
+  </div>
 
-<!-- ══════════ RECEIPT PANEL ══════════ -->
-<div class="panel active" id="panel-receipt">
+  <!-- TAB NAV -->
+  <div class="tab-nav">
+    <button class="tab-btn active" data-tab="new" onclick="showTab('new')">
+      <span class="tab-icon">🧾</span>New Receipt
+    </button>
+    <button class="tab-btn" data-tab="ledger" onclick="showTab('ledger')">
+      <span class="tab-icon">📋</span>Ledger
+    </button>
+    <button class="tab-btn" data-tab="settings" onclick="showTab('settings')">
+      <span class="tab-icon">🏠</span>Properties
+    </button>
+  </div>
 
-  <div class="card">
-    <div class="card-title">✨ Receipt Details</div>
-    <div class="field-group">
-      <div class="sec">🏠 Property & Landlord</div>
-      <div><label>Landlord / Company Name</label><input type="text" id="landlord" value="Sunrise Property Management" oninput="upd()" autocomplete="organization"></div>
-      <div><label>Property Address</label><input type="text" id="address" value="123 Main St, Apt 4B" oninput="upd()" autocomplete="street-address"></div>
-      <div class="sec">🎀 Tenant</div>
-      <div><label>Tenant Full Name</label><input type="text" id="tenant" value="Jane Smith" oninput="upd()" autocomplete="name"></div>
-      <div class="sec">💳 Payment</div>
-      <div class="row2">
-        <div><label>Invoice #</label><input type="text" id="invoice" value="2024-001" oninput="upd()"></div>
-        <div><label>Date</label><input type="date" id="date" oninput="upd()"></div>
-      </div>
-      <div class="row2">
-        <div><label>Amount ($)</label><input type="number" id="amount" value="1200" min="0" step="0.01" inputmode="decimal" oninput="upd()"></div>
-        <div><label>Period</label><input type="text" id="period" placeholder="e.g. June 2024" oninput="upd()"></div>
-      </div>
-      <div>
-        <label>Payment Method</label>
-        <div class="pills">
-          <div class="pill on" onclick="selM(this,'Cash')">Cash</div>
-          <div class="pill" onclick="selM(this,'Cheque')">Cheque</div>
-          <div class="pill" onclick="selM(this,'E-Transfer')">E-Transfer</div>
-          <div class="pill" onclick="selM(this,'Other')">Other</div>
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- ===== NEW RECEIPT VIEW ===== -->
+    <div id="view-new" class="view active">
+
+      <!-- Property & Tenant -->
+      <div class="card" style="margin-top:14px;">
+        <div class="card-title">🏠 Property & Tenant</div>
+        <div class="form-group">
+          <label class="form-label">Property</label>
+          <select class="form-select" id="sel-property" onchange="onPropertyChange()">
+            <option value="">— Select Property —</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tenant</label>
+          <select class="form-select" id="sel-tenant">
+            <option value="">— Select Tenant —</option>
+          </select>
         </div>
       </div>
-      <div><label>Notes (optional)</label><textarea id="notes" placeholder="e.g. Includes parking." oninput="upd()"></textarea></div>
-    </div>
-  </div>
 
-  <!-- RECEIPT PREVIEW -->
-  <div class="receipt-preview">
-    <div class="perf"></div>
-    <div class="ri">
-      <div class="rhead">
-        <div class="kitty-logo">
-          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-            <polygon points="22,42 30,20 42,42" fill="#fce7f3" stroke="#f9a8d4" stroke-width="1.5" stroke-linejoin="round"/>
-            <polygon points="58,42 70,20 78,42" fill="#fce7f3" stroke="#f9a8d4" stroke-width="1.5" stroke-linejoin="round"/>
-            <polygon points="26,41 31,24 39,41" fill="#f9a8d4"/>
-            <polygon points="61,41 70,24 75,41" fill="#f9a8d4"/>
-            <ellipse cx="50" cy="60" rx="32" ry="29" fill="white" stroke="#f9a8d4" stroke-width="1.5"/>
-            <ellipse cx="39" cy="56" rx="4.5" ry="5" fill="#4a1942"/>
-            <ellipse cx="61" cy="56" rx="4.5" ry="5" fill="#4a1942"/>
-            <circle cx="41" cy="54" r="1.8" fill="white"/>
-            <circle cx="63" cy="54" r="1.8" fill="white"/>
-            <ellipse cx="50" cy="64.5" rx="3" ry="2" fill="#f472b6"/>
-            <line x1="18" y1="62" x2="39" y2="64" stroke="#e879f9" stroke-width="1.2" stroke-linecap="round"/>
-            <line x1="18" y1="67" x2="39" y2="66.5" stroke="#e879f9" stroke-width="1.2" stroke-linecap="round"/>
-            <line x1="61" y1="64" x2="82" y2="62" stroke="#e879f9" stroke-width="1.2" stroke-linecap="round"/>
-            <line x1="61" y1="66.5" x2="82" y2="67" stroke="#e879f9" stroke-width="1.2" stroke-linecap="round"/>
-            <ellipse cx="33" cy="70" rx="8" ry="5" fill="#fda4af" opacity="0.45"/>
-            <ellipse cx="67" cy="70" rx="8" ry="5" fill="#fda4af" opacity="0.45"/>
-            <g transform="translate(70,30)">
-              <ellipse cx="-9" cy="0" rx="10" ry="6.5" fill="#db2777" transform="rotate(-15,-9,0)"/>
-              <ellipse cx="9" cy="0" rx="10" ry="6.5" fill="#db2777" transform="rotate(15,9,0)"/>
-              <circle cx="0" cy="0" r="5.5" fill="#f472b6"/>
-              <circle cx="0" cy="0" r="2.5" fill="#fce7f3"/>
-            </g>
-          </svg>
+      <!-- Payment Details -->
+      <div class="card">
+        <div class="card-title">💳 Payment Details</div>
+        <div class="form-group">
+          <label class="form-label">Rental Period</label>
+          <input type="month" class="form-input" id="inp-period">
         </div>
-        <div class="rcompany" id="r-landlord">Sunrise Property Management</div>
-        <div class="rbadge">🎀 Cash Receipt 🎀</div>
-      </div>
-      <div class="rmeta"><div>Invoice # <span id="r-invoice">2024-001</span></div><div>Date: <span id="r-date">—</span></div></div>
-      <div class="rrow"><span class="rl">Received From</span><span class="rv" id="r-tenant">Jane Smith</span></div>
-      <div class="rrow"><span class="rl">Property</span><span class="rv" id="r-address">123 Main St, Apt 4B</span></div>
-      <div class="rrow"><span class="rl">Rental Period</span><span class="rv" id="r-period">—</span></div>
-      <div class="rrow"><span class="rl">Payment Method</span><span class="rv" id="r-method">Cash</span></div>
-      <div class="totalbox"><span class="tlbl">Amount Paid</span><span class="tamt" id="r-amount">$1,200.00</span></div>
-      <div class="paid">✓ Payment Received</div>
-      <div class="rnotes" id="r-notes-wrap" style="display:none"><span id="r-notes"></span></div>
-      <div class="sigline">Authorized Signature</div>
-      <div class="rfooter">This receipt confirms payment received in full.<br>Please retain for your records. 🎀</div>
-    </div>
-  </div>
-
-  <!-- GENERATE PDF -->
-  <button class="btn-main" onclick="generatePDF()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-    Generate Receipt PDF
-  </button>
-
-  <!-- SEND SECTION -->
-  <div class="send-card">
-    <div class="card-title">📨 Send Receipt to Tenant</div>
-
-    <div class="field-group">
-      <div>
-        <label>Tenant Phone (for Text)</label>
-        <input type="tel" id="tenant-phone" placeholder="+1 (204) 555-0123" inputmode="tel" autocomplete="tel">
-      </div>
-      <div>
-        <label>Tenant Email</label>
-        <input type="email" id="tenant-email" placeholder="tenant@email.com" autocomplete="email">
-      </div>
-    </div>
-
-    <!-- iOS SHARE SHEET BUTTON -->
-    <div style="margin-top:14px;">
-      <button class="btn-share-big" onclick="nativeShare(null)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
-          <polyline points="16 6 12 2 8 6"/>
-          <line x1="12" y1="2" x2="12" y2="15"/>
-        </svg>
-        Share Receipt via…
-      </button>
-
-      <!-- App chips showing what share sheet supports -->
-      <div class="share-apps-row">
-        <div class="app-chip"><span>💬</span>iMessage</div>
-        <div class="app-chip"><span>💚</span>WhatsApp</div>
-        <div class="app-chip"><span>💙</span>Messenger</div>
-        <div class="app-chip"><span>🎮</span>Discord</div>
-        <div class="app-chip"><span>+more</span></div>
+        <div class="form-group">
+          <label class="form-label">Amount Received</label>
+          <div class="amount-wrapper">
+            <span class="amount-prefix">$</span>
+            <input type="number" class="form-input" id="inp-amount" placeholder="0.00" step="0.01" min="0">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Payment Method</label>
+            <select class="form-select" id="inp-method">
+              <option>Cash</option>
+              <option>E-Transfer</option>
+              <option>Cheque</option>
+              <option>Bank Transfer</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Payment Date</label>
+            <input type="date" class="form-input" id="inp-date">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Late Fee (optional)</label>
+          <div class="amount-wrapper">
+            <span class="amount-prefix">$</span>
+            <input type="number" class="form-input" id="inp-latefee" placeholder="0.00" step="0.01" min="0">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notes (optional)</label>
+          <textarea class="form-textarea" id="inp-notes" placeholder="Any additional notes..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-select" id="inp-status">
+            <option value="paid">✅ Paid</option>
+            <option value="unpaid">⏳ Unpaid</option>
+          </select>
+        </div>
       </div>
 
-      <div class="share-info">
-        ⚠️ <strong>Important:</strong> "Share via…" only works when this file is open in <strong>Safari or Chrome directly</strong> — not inside the Claude app preview. Save the file to your phone and open it in your browser for the full share sheet.
-      </div>
-
-      <div class="divider-row">
-        <div class="divider-line"></div>
-        <div class="divider-txt">or send directly</div>
-        <div class="divider-line"></div>
-      </div>
-
-      <div class="send-row">
-        <button class="btn-sms" onclick="sendSMS(null)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          Text Tenant
-        </button>
-        <button class="btn-email" onclick="sendEmail(null)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          Gmail
+      <div style="padding: 0 16px 12px;">
+        <button class="btn btn-primary" onclick="generateReceipt()">
+          <span>🧾</span> Generate Receipt
         </button>
       </div>
-      <p class="send-note">💬 Text opens iMessage · 📧 Gmail opens Gmail app (falls back to Mail if not installed)</p>
-    </div>
-  </div>
 
-</div>
+      <!-- Receipt Preview -->
+      <div id="receipt-preview-wrap">
+        <div id="receipt-paper-el" class="receipt-paper">
+          <!-- filled by JS -->
+        </div>
 
-<!-- ══════════ LEDGER PANEL ══════════ -->
-<div class="panel" id="panel-ledger">
-  <div class="card">
-    <div class="ledger-top">
-      <h2>📒 Payment Ledger</h2>
-      <div class="btn-acts">
-        <button class="bsm bex" onclick="exportLedger()">Export PDF</button>
-        <button class="bsm bcl" onclick="askClearAll()">Clear All</button>
+        <div class="share-bar visible" style="margin-top:12px;">
+          <button class="btn btn-primary" id="btn-share-pdf" onclick="sharePDF()">
+            <span>📤</span> Share as PDF
+          </button>
+          <div class="btn-row">
+            <button class="btn btn-secondary" onclick="saveToLedger()">
+              <span>💾</span> Save to Ledger
+            </button>
+            <button class="btn btn-secondary" onclick="clearReceipt()">
+              <span>✖</span> Clear
+            </button>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="sum-grid">
-      <div class="scard"><div class="sval" id="s-total">$0.00</div><div class="slbl">Collected</div></div>
-      <div class="scard"><div class="sval" id="s-count">0</div><div class="slbl">Receipts</div></div>
-      <div class="scard"><div class="sval" id="s-last">—</div><div class="slbl">Last Payment</div></div>
+
+    <!-- ===== LEDGER VIEW ===== -->
+    <div id="view-ledger" class="view">
+
+      <!-- Stats -->
+      <div class="stats-bar" id="stats-bar" style="padding-top:14px;"></div>
+
+      <!-- Search + Status filter -->
+      <div class="ledger-toolbar">
+        <div class="search-input-wrap">
+          <span class="search-icon">🔍</span>
+          <input class="ledger-search" id="ledger-search" placeholder="Search tenant, property…" oninput="renderLedger()">
+        </div>
+        <button class="filter-btn" id="filter-status-btn" onclick="toggleStatusFilter()">All</button>
+      </div>
+
+      <!-- Sort pills -->
+      <div class="sort-bar" id="sort-bar">
+        <button class="sort-pill active" data-sort="date" onclick="setSort('date')">Date</button>
+        <button class="sort-pill" data-sort="name" onclick="setSort('name')">Name</button>
+        <button class="sort-pill" data-sort="property" onclick="setSort('property')">Property</button>
+        <button class="sort-pill" data-sort="amount" onclick="setSort('amount')">Amount</button>
+      </div>
+
+      <!-- Export -->
+      <div class="export-bar">
+        <button class="btn btn-secondary btn-sm" onclick="exportCSV()">📥 CSV</button>
+        <button class="btn btn-secondary btn-sm" onclick="exportPDFLedger()">📄 PDF Report</button>
+      </div>
+
+      <div class="ledger-list" id="ledger-list"></div>
     </div>
-    <div id="l-empty" class="lempty">🎀 No entries yet.<br>Generate a receipt to log it here!</div>
-    <div id="l-entries"></div>
-  </div>
-</div>
+
+    <!-- ===== SETTINGS / PROPERTIES VIEW ===== -->
+    <div id="view-settings" class="view">
+
+      <!-- Company Info -->
+      <div class="settings-section" style="margin-top:14px;">
+        <div class="settings-section-title">Landlord / Company</div>
+        <div class="card">
+          <div class="form-group">
+            <label class="form-label">Company / Landlord Name</label>
+            <input type="text" class="form-input" id="set-company" placeholder="e.g. Win Properties Inc." oninput="saveSettings()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Address / Contact (optional)</label>
+            <textarea class="form-textarea" id="set-contact" placeholder="123 Main St, Winnipeg MB&#10;204-555-1234" style="min-height:64px;" oninput="saveSettings()"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Properties -->
+      <div class="settings-section">
+        <div class="settings-section-title">Properties</div>
+        <div id="property-list"></div>
+        <div style="padding: 0 16px;">
+          <button class="btn btn-secondary" onclick="openAddProperty()">
+            <span>➕</span> Add Property
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /app -->
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<!-- CONFIRM MODAL -->
-<div class="modal-bg" id="modal-bg" onclick="if(event.target===this)closeModal()">
-  <div class="modal">
+<!-- MODAL: Add/Edit Property -->
+<div class="modal-overlay" id="modal-property">
+  <div class="modal-sheet">
     <div class="modal-handle"></div>
-    <div class="modal-icon" id="m-icon">⚠️</div>
-    <h3 id="m-title">Are you sure?</h3>
-    <p id="m-msg"></p>
-    <div class="modal-btns">
-      <button class="mbtn cancel" onclick="closeModal()">Cancel</button>
-      <button class="mbtn danger" id="m-ok" onclick="doModal()">Delete</button>
+    <div class="modal-title" id="modal-property-title">Add Property</div>
+    <div class="form-group">
+      <label class="form-label">Full Address</label>
+      <input type="text" class="form-input" id="modal-prop-addr" placeholder="123 Oak St, Winnipeg MB R3C 1A1">
+    </div>
+    <div class="divider"></div>
+    <div class="modal-title" style="font-size:16px; margin-bottom:12px;">Tenants</div>
+    <div id="modal-tenant-list" style="margin-bottom:12px;"></div>
+    <div class="form-row" style="margin-bottom:14px;">
+      <input type="text" class="form-input" id="modal-tenant-input" placeholder="Tenant name" onkeydown="if(event.key==='Enter')addTenantToModal()">
+      <button class="btn btn-secondary" onclick="addTenantToModal()" style="width:auto; padding:12px 16px;">Add</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="saveProperty()">Save Property</button>
+      <button class="btn btn-secondary" onclick="closeModal('modal-property')">Cancel</button>
     </div>
   </div>
 </div>
 
-<!-- EDIT MODAL -->
-<div class="modal-bg" id="edit-bg" onclick="if(event.target===this)closeEdit()">
-  <div class="modal">
+<!-- MODAL: Edit Receipt -->
+<div class="modal-overlay" id="modal-edit-receipt">
+  <div class="modal-sheet">
     <div class="modal-handle"></div>
-    <div style="font-size:1.05rem;font-weight:700;color:var(--ink);margin-bottom:16px;text-align:center;">✏️ Edit Transaction</div>
-    <div class="edit-fields">
-      <div class="edit-r2">
-        <div><label>Invoice #</label><input type="text" id="e-invoice"></div>
-        <div><label>Date</label><input type="date" id="e-date"></div>
+    <div class="modal-title">Edit Receipt</div>
+    <div class="form-group">
+      <label class="form-label">Amount</label>
+      <div class="amount-wrapper">
+        <span class="amount-prefix">$</span>
+        <input type="number" class="form-input" id="edit-amount" step="0.01">
       </div>
-      <div><label>Tenant Name</label><input type="text" id="e-tenant"></div>
-      <div><label>Property Address</label><input type="text" id="e-address"></div>
-      <div class="edit-r2">
-        <div><label>Amount ($)</label><input type="number" id="e-amount" inputmode="decimal"></div>
-        <div><label>Period</label><input type="text" id="e-period"></div>
-      </div>
-      <div><label>Payment Method</label>
-        <select id="e-method"><option>Cash</option><option>Cheque</option><option>E-Transfer</option><option>Other</option></select>
-      </div>
-      <div><label>Landlord</label><input type="text" id="e-landlord"></div>
-      <div class="edit-r2">
-        <div><label>Phone</label><input type="tel" id="e-phone" inputmode="tel"></div>
-        <div><label>Email</label><input type="email" id="e-email"></div>
-      </div>
-      <div><label>Notes</label><textarea id="e-notes" style="min-height:48px;font-size:15px;resize:none;"></textarea></div>
     </div>
-    <div class="modal-btns">
-      <button class="mbtn cancel" onclick="closeEdit()">Cancel</button>
-      <button class="mbtn save" onclick="saveEdit()">Save Changes</button>
+    <div class="form-group">
+      <label class="form-label">Payment Method</label>
+      <select class="form-select" id="edit-method">
+        <option>Cash</option><option>E-Transfer</option><option>Cheque</option><option>Bank Transfer</option><option>Other</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Payment Date</label>
+      <input type="date" class="form-input" id="edit-date">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Late Fee</label>
+      <div class="amount-wrapper">
+        <span class="amount-prefix">$</span>
+        <input type="number" class="form-input" id="edit-latefee" step="0.01">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notes</label>
+      <textarea class="form-textarea" id="edit-notes"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Status</label>
+      <select class="form-select" id="edit-status">
+        <option value="paid">✅ Paid</option>
+        <option value="unpaid">⏳ Unpaid</option>
+      </select>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="saveEditReceipt()">Save Changes</button>
+      <button class="btn btn-secondary" onclick="closeModal('modal-edit-receipt')">Cancel</button>
     </div>
   </div>
 </div>
 
 <script>
-// ── STORAGE ────────────────────────────────────────────────────
-const SK = 'rentalLedgerV7';
-function loadLedger(){try{const r=localStorage.getItem(SK);if(!r)return[];const p=JSON.parse(r);return Array.isArray(p)?p:[];}catch(e){return[];}}
-function saveLedger(){try{localStorage.setItem(SK,JSON.stringify(ledger));}catch(e){}}
-let ledger = loadLedger();
+// ════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════
+let state = {
+  properties: [],     // { id, name, address, tenants: [] }
+  receipts: [],       // { id, receiptNum, propertyId, propertyName, propertyAddress, tenant, period, amount, lateFee, method, date, notes, status, createdAt }
+  settings: { company: '', contact: '' },
+  receiptCounter: 1
+};
 
-// ── CONFIRM MODAL ──────────────────────────────────────────────
-let _cb=null;
-function openModal(icon,title,msg,btnTxt,cb){document.getElementById('m-icon').textContent=icon;document.getElementById('m-title').textContent=title;document.getElementById('m-msg').textContent=msg;document.getElementById('m-ok').textContent=btnTxt;_cb=cb;document.getElementById('modal-bg').classList.add('open');}
-function closeModal(){document.getElementById('modal-bg').classList.remove('open');_cb=null;}
-function doModal(){const cb=_cb;closeModal();if(cb)cb();}
+let currentReceipt = null;
+let editingReceiptId = null;
+let editingPropertyId = null;
+let modalTenants = [];
+let ledgerStatusFilter = 'all'; // all | paid | unpaid
+let ledgerSort = { field: 'date', dir: 'desc' }; // field: date|name|property|amount
 
-function askClearAll(){
-  if(!ledger.length){showToast('Ledger is already empty!');return;}
-  openModal('🗑️','Clear all entries?',ledger.length+' record'+(ledger.length!==1?'s':'')+' will be permanently deleted.','Clear All',()=>{ledger=[];saveLedger();renderLedger();showToast('✓ Ledger cleared');});
-}
-function askDel(id){
-  const e=ledger.find(x=>x.id===id);if(!e)return;
-  openModal('🗑️','Delete this entry?',e.tenant+' — '+e.date+' — '+fmt(e.amount),'Delete',()=>{ledger=ledger.filter(x=>x.id!==id);saveLedger();renderLedger();showToast('✓ Entry deleted');});
-}
-
-// ── EDIT MODAL ─────────────────────────────────────────────────
-let _editId=null;
-function openEdit(id){
-  const e=ledger.find(x=>x.id===id);if(!e)return;
-  _editId=id;
-  document.getElementById('e-invoice').value=e.invoice||'';
-  document.getElementById('e-date').value=e.rawDate||'';
-  document.getElementById('e-tenant').value=e.tenant||'';
-  document.getElementById('e-address').value=e.address||'';
-  document.getElementById('e-amount').value=e.amount||'';
-  document.getElementById('e-period').value=e.period||'';
-  document.getElementById('e-method').value=e.method||'Cash';
-  document.getElementById('e-landlord').value=e.landlord||'';
-  document.getElementById('e-phone').value=e.tenantPhone||'';
-  document.getElementById('e-email').value=e.tenantEmail||'';
-  document.getElementById('e-notes').value=e.notes||'';
-  document.getElementById('edit-bg').classList.add('open');
-}
-function closeEdit(){document.getElementById('edit-bg').classList.remove('open');_editId=null;}
-function saveEdit(){
-  if(!_editId)return;
-  const idx=ledger.findIndex(x=>x.id===_editId);if(idx<0)return;
-  const rawDate=document.getElementById('e-date').value;
-  ledger[idx]={...ledger[idx],
-    invoice:document.getElementById('e-invoice').value,rawDate,date:fmtD(rawDate),
-    tenant:document.getElementById('e-tenant').value,address:document.getElementById('e-address').value,
-    amount:document.getElementById('e-amount').value,period:document.getElementById('e-period').value,
-    method:document.getElementById('e-method').value,landlord:document.getElementById('e-landlord').value,
-    tenantPhone:document.getElementById('e-phone').value,tenantEmail:document.getElementById('e-email').value,
-    notes:document.getElementById('e-notes').value,
-  };
-  saveLedger();closeEdit();renderLedger();showToast('✓ Entry updated');
+// ════════════════════════════════════════════
+// PERSISTENCE
+// ════════════════════════════════════════════
+function save() {
+  localStorage.setItem('rentreceipt_state', JSON.stringify(state));
 }
 
-// ── TOAST ──────────────────────────────────────────────────────
-function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
-
-// ── TABS ───────────────────────────────────────────────────────
-function showTab(name){
-  ['receipt','ledger'].forEach(n=>{document.getElementById('tab-'+n).classList.toggle('active',n===name);document.getElementById('panel-'+n).classList.toggle('active',n===name);});
-  if(name==='ledger')renderLedger();
-}
-
-// ── METHOD ─────────────────────────────────────────────────────
-let method='Cash';
-function selM(el,m){method=m;document.querySelectorAll('.pill').forEach(p=>p.classList.remove('on'));el.classList.add('on');upd();}
-
-// ── HELPERS ────────────────────────────────────────────────────
-function fmt(v){const n=parseFloat(v);if(isNaN(n))return'$0.00';return'$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
-function fmtD(d){if(!d)return'—';const[y,m,day]=d.split('-');return['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]+' '+parseInt(day)+', '+y;}
-function g(id){return document.getElementById(id).value;}
-
-// ── DEFAULTS ───────────────────────────────────────────────────
-document.getElementById('date').value=new Date().toISOString().split('T')[0];
-document.getElementById('period').value=new Date().toLocaleString('default',{month:'long',year:'numeric'});
-
-// ── LIVE PREVIEW ───────────────────────────────────────────────
-function upd(){
-  document.getElementById('r-landlord').textContent=g('landlord')||'Landlord';
-  document.getElementById('r-invoice').textContent=g('invoice')||'—';
-  document.getElementById('r-date').textContent=fmtD(g('date'));
-  document.getElementById('r-tenant').textContent=g('tenant')||'—';
-  document.getElementById('r-address').textContent=g('address')||'—';
-  document.getElementById('r-period').textContent=g('period')||'—';
-  document.getElementById('r-method').textContent=method;
-  document.getElementById('r-amount').textContent=fmt(g('amount'));
-  const n=g('notes').trim();
-  document.getElementById('r-notes').textContent=n;
-  document.getElementById('r-notes-wrap').style.display=n?'block':'none';
-}
-upd();
-
-// ── BUILD RECEIPT TEXT ─────────────────────────────────────────
-function buildText(d){
-  const landlord=d?d.landlord:(g('landlord')||'—');
-  const address=d?d.address:(g('address')||'—');
-  const tenant=d?d.tenant:(g('tenant')||'—');
-  const invoice=d?d.invoice:(g('invoice')||'—');
-  const date=d?d.date:fmtD(g('date'));
-  const period=d?d.period:(g('period')||'—');
-  const meth=d?d.method:method;
-  const amount=d?fmt(d.amount):fmt(g('amount'));
-  const notes=d?(d.notes||''):g('notes').trim();
-  return[
-    '🎀 RENTAL PAYMENT RECEIPT',
-    '─────────────────────────',
-    'Landlord: '+landlord,
-    'Property: '+address,
-    '',
-    'Tenant:    '+tenant,
-    'Invoice #: '+invoice,
-    'Date:      '+date,
-    'Period:    '+period,
-    'Method:    '+meth,
-    '',
-    'AMOUNT PAID: '+amount,
-    '─────────────────────────',
-    '✓ Payment Received',
-    notes?'Notes: '+notes:'',
-    '',
-    'Thank you for your payment! 🎀'
-  ].filter(Boolean).join('\n');
-}
-
-// ── NATIVE SHARE SHEET (WhatsApp, Discord, Messenger, etc.) ────
-async function nativeShare(entryData){
-  showToast("Preparing PDF...");
-
-  const { doc } = buildPDF(entryData);
-
-  const tenant = entryData ? entryData.tenant : g('tenant');
-  const invoice = entryData ? entryData.invoice : g('invoice');
-
-  const fileName = `Receipt_${invoice}_${(tenant || "tenant").replace(/\s+/g, "_")}.pdf`;
-
-  const blob = doc.output("blob");
-
-  const file = new File([blob], fileName, {
-    type: "application/pdf"
-  });
-
-  if (!navigator.canShare || !navigator.canShare({ files: [file] })) {
-    return fallbackShareText(entryData);
+function load() {
+  const raw = localStorage.getItem('rentreceipt_state');
+  if (raw) {
+    try { state = JSON.parse(raw); } catch(e) {}
   }
-
-  try {
-    await navigator.share({
-      files: [file],
-      title: "Rental Receipt",
-      text: "Here is your receipt"
-    });
-
-    showToast("✓ Shared!");
-  } catch (e) {
-    if (e.name !== "AbortError") {
-      showToast("Share failed");
-    }
-  }
+  // Defaults
+  if (!state.properties) state.properties = [];
+  if (!state.receipts) state.receipts = [];
+  if (!state.settings) state.settings = { company: '', contact: '' };
+  if (!state.receiptCounter) state.receiptCounter = 1;
 }
 
-async function fallbackShareText(entryData){
-  const text = buildText(entryData);
-
-  if (navigator.share) {
-    try {
-      await navigator.share({ text });
-      showToast("✓ Shared as text");
-      return;
-    } catch {}
-  }
-
-  try {
-    await navigator.clipboard.writeText(text);
-    showToast("📋 Copied");
-  } catch {
-    showToast("Sharing not supported");
-  }
+// ════════════════════════════════════════════
+// TABS
+// ════════════════════════════════════════════
+function showTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + tab).classList.add('active');
+  if (tab === 'ledger') renderLedger();
+  if (tab === 'settings') renderSettings();
 }
 
-// ── SMS ────────────────────────────────────────────────────────
-function sendSMS(d){
-  const phone=(d?d.tenantPhone:g('tenant-phone')).replace(/\s+/g,'');
-  const body=encodeURIComponent(buildText(d));
-  window.location.href=phone?'sms:'+phone+'&body='+body:'sms:?body='+body;
+// ════════════════════════════════════════════
+// SETTINGS
+// ════════════════════════════════════════════
+function saveSettings() {
+  state.settings.company = document.getElementById('set-company').value;
+  state.settings.contact = document.getElementById('set-contact').value;
+  save();
 }
 
-// ── EMAIL VIA GMAIL ────────────────────────────────────────────
-// Uses Gmail's URL scheme which opens the Gmail app on iPhone.
-// googlegmail:// opens Gmail app; falls back to mailto: if not installed.
-function sendEmail(d){
-  const email   = d ? d.tenantEmail : g('tenant-email');
-  const invoice = d ? d.invoice     : g('invoice');
-  const period  = d ? d.period      : g('period');
-  const subject = encodeURIComponent('🎀 Rental Receipt — '+(period||fmtD(g('date')))+' — Invoice #'+invoice);
-  const body    = encodeURIComponent(buildText(d));
-  const to      = encodeURIComponent(email);
-
-  // Gmail app URL scheme (iOS & Android)
-  const gmailURL = 'googlegmail://co?to='+to+'&subject='+subject+'&body='+body;
-
-  // Try Gmail app first — if not installed iPhone will silently fail,
-  // so we set a short timeout and fall back to mailto: (default Mail app)
-  let opened = false;
-  const fallback = setTimeout(()=>{
-    if(!opened) window.location.href = 'mailto:'+email+'?subject='+subject+'&body='+body;
-  }, 1500);
-
-  // Use an invisible iframe to attempt the Gmail URL without navigating away
-  const iframe = document.createElement('iframe');
-  iframe.style.display = 'none';
-  iframe.src = gmailURL;
-  document.body.appendChild(iframe);
-  setTimeout(()=>{ document.body.removeChild(iframe); }, 2000);
-
-  // Listen for blur — means the Gmail app actually opened
-  window.addEventListener('blur', function onBlur(){
-    opened = true;
-    clearTimeout(fallback);
-    window.removeEventListener('blur', onBlur);
-  }, {once:true});
+function renderSettings() {
+  document.getElementById('set-company').value = state.settings.company || '';
+  document.getElementById('set-contact').value = state.settings.contact || '';
+  renderPropertyList();
 }
 
-// ── DRAW CAT ───────────────────────────────────────────────────
-function drawCat(doc,cx,topY){
-  const s=.28,sx=x=>cx-14+x*s,sy=y=>topY+y*s;
-  doc.setFillColor(252,231,243);doc.setDrawColor(249,168,212);doc.setLineWidth(.4);
-  doc.triangle(sx(22),sy(42),sx(30),sy(20),sx(42),sy(42),'FD');doc.triangle(sx(58),sy(42),sx(70),sy(20),sx(78),sy(42),'FD');
-  doc.setFillColor(249,168,212);doc.triangle(sx(26),sy(41),sx(31),sy(24),sx(39),sy(41),'F');doc.triangle(sx(61),sy(41),sx(70),sy(24),sx(75),sy(41),'F');
-  doc.setFillColor(255,255,255);doc.setDrawColor(249,168,212);doc.ellipse(sx(50),sy(60),32*s,29*s,'FD');
-  doc.setFillColor(74,25,66);doc.ellipse(sx(39),sy(56),4.5*s,5*s,'F');doc.ellipse(sx(61),sy(56),4.5*s,5*s,'F');
-  doc.setFillColor(255,255,255);doc.circle(sx(41),sy(54),1.8*s,'F');doc.circle(sx(63),sy(54),1.8*s,'F');
-  doc.setFillColor(244,114,182);doc.ellipse(sx(50),sy(64.5),3*s,2*s,'F');
-  doc.setDrawColor(232,121,249);doc.setLineWidth(.3);
-  doc.line(sx(18),sy(62),sx(39),sy(64));doc.line(sx(18),sy(67),sx(39),sy(66.5));
-  doc.line(sx(61),sy(64),sx(82),sy(62));doc.line(sx(61),sy(66.5),sx(82),sy(67));
-  doc.setFillColor(253,164,175);doc.ellipse(sx(33),sy(70),8*s,5*s,'F');doc.ellipse(sx(67),sy(70),8*s,5*s,'F');
-  const bx=sx(70),by=sy(30);
-  doc.setFillColor(219,39,119);doc.ellipse(bx-9*s,by,10*s,6.5*s,'F');doc.ellipse(bx+9*s,by,10*s,6.5*s,'F');
-  doc.setFillColor(244,114,182);doc.circle(bx,by,5.5*s,'F');
-  doc.setFillColor(252,231,243);doc.circle(bx,by,2.5*s,'F');
-}
-
-// ── OPEN PDF ───────────────────────────────────────────────────
-function openPDF(doc,name){
-  const uri=doc.output('datauristring');
-  const w=window.open('','_blank');
-  if(w){w.document.write('<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width"><title>'+name+'</title><style>*{margin:0;padding:0;box-sizing:border-box}body{background:#1a1a1a;display:flex;flex-direction:column;height:100vh}iframe{flex:1;border:none;width:100%}</style></head><body><iframe src="'+uri+'"></iframe></body></html>');w.document.close();}
-  else{const a=document.createElement('a');a.href=uri;a.download=name;a.target='_blank';document.body.appendChild(a);a.click();document.body.removeChild(a);}
-}
-
-// ── BUILD PDF ──────────────────────────────────────────────────
-function buildPDF(d){
-  const {jsPDF}=window.jspdf;
-  const doc=new jsPDF({unit:'mm',format:'a5',orientation:'portrait'});
-
-  const landlord=d?d.landlord:(g('landlord')||'Landlord');
-  const invoice=d?d.invoice:(g('invoice')||'—');
-  const date=d?d.date:fmtD(g('date'));
-  const tenant=d?d.tenant:(g('tenant')||'—');
-  const address=d?d.address:(g('address')||'—');
-  const period=d?d.period:(g('period')||'—');
-  const meth=d?d.method:method;
-  const amount=d?fmt(d.amount):fmt(g('amount'));
-  const notes=d?(d.notes||''):g('notes').trim();
-
-  const W=148, M=16;
-  let y=0;
-
-  // HEADER BG
-  doc.setFillColor(244,114,182);doc.rect(0,0,W*.6,50,'F');
-  doc.setFillColor(168,85,247);doc.rect(W*.45,0,W*.55,50,'F');
-  doc.setFillColor(219,39,119);doc.rect(W*.38,0,W*.26,50,'F');
-
-  drawCat(doc,W/2,2);
-
-  doc.setFont('helvetica','bold');
-  doc.setFontSize(11);
-  doc.setTextColor(255,255,255);
-  doc.text(landlord,W/2,44,{align:'center'});
-
-  y=58;
-
-  // META
-  doc.setFontSize(8);
-  doc.setFont('helvetica','bold');
-  doc.setTextColor(168,85,247);
-  doc.text('Invoice #  '+invoice,M,y);
-  doc.text('Date:  '+date,W-M,y,{align:'right'});
-
-  y+=5;
-  doc.setDrawColor(240,171,220);
-  doc.setLineWidth(.3);
-  doc.setLineDash([1,1]);
-  doc.line(M,y,W-M,y);
-  doc.setLineDash([]);
-  y+=7;
-
-  // DETAILS
-  [
-    ['Received From',tenant],
-    ['Property',address],
-    ['Rental Period',period],
-    ['Payment Method',meth]
-  ].forEach(([l,v])=>{
-    doc.setFont('helvetica','normal');
-    doc.setTextColor(192,132,184);
-    doc.setFontSize(7.5);
-    doc.text(l,M,y);
-
-    doc.setFont('helvetica','bold');
-    doc.setTextColor(74,25,66);
-    doc.setFontSize(8);
-    doc.text(v,W-M,y,{align:'right',maxWidth:70});
-
-    y+=2;
-    doc.setDrawColor(240,171,220);
-    doc.setLineDash([1,1]);
-    doc.line(M,y+3,W-M,y+3);
-    doc.setLineDash([]);
-    y+=8;
-  });
-
-  y+=2;
-
-  // AMOUNT BOX
-  doc.setFillColor(219,39,119);
-  doc.roundedRect(M,y,W-M*2,16,4,4,'F');
-
-  doc.setFillColor(126,34,206);
-  doc.roundedRect(M+(W-M*2)*.5,y,(W-M*2)*.5,16,4,4,'F');
-
-  doc.setFont('helvetica','bold');
-  doc.setFontSize(7);
-  doc.setTextColor(255,220,240);
-  doc.setCharSpace(1.5);
-  doc.text('AMOUNT PAID',M+5,y+9.5);
-  doc.setCharSpace(0);
-
-  doc.setFontSize(16);
-  doc.setTextColor(255,255,255);
-  doc.text(amount,W-M-4,y+10.5,{align:'right'});
-
-  y+=22;
-
-  // PAYMENT RECEIVED BOX
-  doc.setDrawColor(126,34,206);
-  doc.setLineWidth(.6);
-  doc.roundedRect(M,y,W-M*2,10,2,2,'S');
-
-  doc.setFont('helvetica','bold');
-  doc.setFontSize(8.5);
-  doc.setTextColor(126,34,206);
-
-  const text = '* PAYMENT RECEIVED *';
-  const charSpacing = 2.5;
-
-  const baseWidth = doc.getTextWidth(text);
-  const adjustedWidth = baseWidth + (text.length - 1) * charSpacing;
-
-  // ✅ center INSIDE the box
-  const boxWidth = W - M*2;
-  const x = M + (boxWidth - adjustedWidth) / 2;
-
-  doc.setCharSpace(charSpacing);
-  doc.text(text, x, y + 6.5);
-  doc.setCharSpace(0);
-
-  y+=16;
-
-  // NOTES
-  if(notes){
-    doc.setFont('helvetica','italic');
-    doc.setFontSize(7.5);
-    doc.setTextColor(168,85,247);
-    const lines=doc.splitTextToSize('Notes: '+notes,W-M*2);
-    doc.text(lines,M,y);
-    y+=lines.length*4.5+4;
-  }
-
-  y+=3;
-
-  // FOOTER LINE
-  doc.setDrawColor(240,171,220);
-  doc.setLineDash([1.5,1.5]);
-  doc.line(M,y,W-M,y);
-  doc.setLineDash([]);
-  y+=8;
-
-  // SIGNATURE
-  doc.setDrawColor(244,114,182);
-  doc.setLineWidth(.5);
-  doc.line(W/2-28,y+4,W/2+28,y+4);
-
-  doc.setFont('helvetica','normal');
-  doc.setFontSize(7);
-  doc.setTextColor(192,132,184);
-  doc.text('Authorized Signature',W/2,y+9,{align:'center'});
-
-  y+=16;
-
-  // FINAL NOTE
-  doc.setFontSize(6.5);
-  doc.text(
-    'This receipt confirms payment received in full. Please retain for your records.',
-    W/2,
-    y,
-    {align:'center'}
-  );
-
-  return {doc,invoice,tenant};
-}
-
-// ── GENERATE NEW RECEIPT ────────────────────────────────────────
-function generatePDF(){
-  const {doc,invoice,tenant}=buildPDF(null);
-  openPDF(doc,'Receipt_'+invoice+'_'+(tenant||'tenant').replace(/\s+/g,'_')+'.pdf');
-  ledger.push({
-    id:Date.now(),invoice:g('invoice'),date:fmtD(g('date')),rawDate:g('date'),
-    tenant:g('tenant'),address:g('address'),period:g('period'),
-    method,amount:g('amount'),notes:g('notes'),landlord:g('landlord'),
-    tenantPhone:g('tenant-phone'),tenantEmail:g('tenant-email'),
-  });
-  saveLedger();
-  showToast('✓ Logged to Ledger!');
-  const inv=g('invoice'),match=inv.match(/^(.*?)(\d+)$/);
-  if(match){document.getElementById('invoice').value=match[1]+String(parseInt(match[2])+1).padStart(match[2].length,'0');upd();}
-}
-
-// ── RENDER LEDGER ──────────────────────────────────────────────
-function renderLedger(){
-  ledger=loadLedger();
-  const empty=document.getElementById('l-empty');
-  const entries=document.getElementById('l-entries');
-  if(!ledger.length){
-    empty.style.display='block';entries.innerHTML='';
-    document.getElementById('s-total').textContent='$0.00';
-    document.getElementById('s-count').textContent='0';
-    document.getElementById('s-last').textContent='—';
+// ════════════════════════════════════════════
+// PROPERTY MANAGEMENT
+// ════════════════════════════════════════════
+function renderPropertyList() {
+  const el = document.getElementById('property-list');
+  if (!state.properties.length) {
+    el.innerHTML = '<div style="padding:12px 16px 16px; color:var(--text-muted); font-size:14px;">No properties yet. Add one below.</div>';
     return;
   }
-  empty.style.display='none';
-  let run=0;entries.innerHTML='';
-  ledger.forEach((e,i)=>{
-    run+=parseFloat(e.amount)||0;
-    const hasSMS=!!(e.tenantPhone&&e.tenantPhone.trim());
-    const hasEmail=!!(e.tenantEmail&&e.tenantEmail.trim());
-    const div=document.createElement('div');
-    div.className='lentry';
-    div.innerHTML=`
-      <div class="le-top">
-        <span class="le-num">#${i+1} · ${e.invoice||'—'}</span>
-        <div class="le-actions">
-          <button class="le-btn le-edit" onclick="openEdit(${e.id})">✏️</button>
-          <button class="le-btn le-del" onclick="askDel(${e.id})">🗑️</button>
+  el.innerHTML = state.properties.map(p => `
+    <div class="property-item">
+      <div class="property-item-header">
+        <div>
+          <div class="property-item-name">🏠 ${esc(p.address)}</div>
+        </div>
+        <div class="property-item-actions">
+          <button class="icon-btn" onclick="openEditProperty('${p.id}')" title="Edit">✏️</button>
+          <button class="icon-btn danger" onclick="deleteProperty('${p.id}')" title="Delete">🗑️</button>
         </div>
       </div>
-      <div class="le-fields">
-        <div class="le-field"><span class="le-label">Tenant</span><span class="le-val">${e.tenant||'—'}</span></div>
-        <div class="le-field"><span class="le-label">Date</span><span class="le-val">${e.date||'—'}</span></div>
-        <div class="le-field"><span class="le-label">Period</span><span class="le-val">${e.period||'—'}</span></div>
-        <div class="le-field"><span class="le-label">Method</span><span class="le-val">${e.method||'—'}</span></div>
+      <div style="margin-top:8px;">
+        ${p.tenants.map(t => `<span class="tenant-tag">👤 ${esc(t)}</span>`).join('')}
+        ${!p.tenants.length ? '<span style="font-size:12px;color:var(--text-muted);">No tenants added</span>' : ''}
       </div>
-      <div class="le-bottom">
-        <span class="le-amount">${fmt(e.amount)}</span>
-        <span class="le-running">Running total: ${fmt(run)}</span>
-      </div>
-      ${e.notes?`<div class="le-notes">📝 ${e.notes}</div>`:''}
-      <div class="le-send-section">
-        <div class="le-send-label">📨 Resend Receipt</div>
-        <button class="le-share-btn" onclick="nativeShare(ledger.find(x=>x.id===${e.id}))">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
-            <polyline points="16 6 12 2 8 6"/>
-            <line x1="12" y1="2" x2="12" y2="15"/>
-          </svg>
-          Share via WhatsApp, iMessage, Discord…
-        </button>
-        <div class="le-sub-row">
-          <button class="le-sms" onclick="sendSMS(ledger.find(x=>x.id===${e.id}))">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-            ${hasSMS?'Text '+e.tenantPhone:'Text'}
-          </button>
-          <button class="le-mail" onclick="sendEmail(ledger.find(x=>x.id===${e.id}))">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-            ${hasEmail?'Gmail '+e.tenantEmail.split('@')[0]:'Gmail'}
-          </button>
-        </div>
-      </div>
-    `;
-    entries.appendChild(div);
-  });
-  const total=ledger.reduce((s,e)=>s+(parseFloat(e.amount)||0),0);
-  document.getElementById('s-total').textContent=fmt(total);
-  document.getElementById('s-count').textContent=ledger.length;
-  document.getElementById('s-last').textContent=ledger[ledger.length-1]?.date||'—';
+    </div>
+  `).join('');
 }
 
-// ── EXPORT LEDGER PDF ──────────────────────────────────────────
-function exportLedger(){
-  if(!ledger.length){showToast('No entries to export!');return;}
-  const {jsPDF}=window.jspdf;
-  const doc=new jsPDF({unit:'mm',format:'a4',orientation:'portrait'});
-  const W=210,M=14;let y=0;
-  doc.setFillColor(219,39,119);doc.rect(0,0,W,28,'F');
-  doc.setFillColor(126,34,206);doc.rect(W*.5,0,W*.5,28,'F');
-  doc.setFillColor(168,85,247);doc.rect(W*.38,0,W*.24,28,'F');
-  doc.setFont('helvetica','bold');doc.setFontSize(15);doc.setTextColor(255,255,255);
-  doc.text('Rental Payment Ledger',W/2,12,{align:'center'});
-  doc.setFontSize(8);doc.setTextColor(255,220,240);
-  doc.text('Exported: '+new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}),W/2,21,{align:'center'});
-  y=36;
-  const total=ledger.reduce((s,e)=>s+(parseFloat(e.amount)||0),0);
-  doc.setFillColor(253,242,248);doc.roundedRect(M,y,W-M*2,12,3,3,'F');
-  doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(126,34,206);
-  doc.text('Total Receipts: '+ledger.length,M+5,y+5.5);doc.text('Total Collected: '+fmt(total),M+5,y+10.5);
-  if(ledger[0]?.landlord){doc.setTextColor(219,39,119);doc.text('Landlord: '+ledger[0].landlord,W-M-5,y+8,{align:'right'});}
-  y+=18;
-  const cols=[{l:'#',w:8},{l:'Invoice',w:22},{l:'Date',w:22},{l:'Tenant',w:36},{l:'Period',w:24},{l:'Method',w:22},{l:'Amount',w:24},{l:'Running Total',w:28}];
-  doc.setFillColor(252,231,243);doc.rect(M,y,W-M*2,8,'F');
-  let cx=M;cols.forEach(c=>{doc.setFont('helvetica','bold');doc.setFontSize(6.5);doc.setTextColor(126,34,206);doc.text(c.l,cx+1,y+5.5);cx+=c.w;});
-  y+=8;let run=0;
-  ledger.forEach((e,i)=>{
-    run+=parseFloat(e.amount)||0;
-    if(i%2===0){doc.setFillColor(253,242,248);doc.rect(M,y,W-M*2,7,'F');}
-    cx=M;
-    [String(i+1),e.invoice||'—',e.date||'—',e.tenant||'—',e.period||'—',e.method||'—',fmt(e.amount),fmt(run)].forEach((v,vi)=>{
-      doc.setFont('helvetica',vi>=6?'bold':'normal');doc.setFontSize(7);
-      doc.setTextColor(vi>=6?126:74,vi>=6?34:25,vi>=6?206:66);
-      doc.text(String(v),cx+1,y+5,{maxWidth:cols[vi].w-2});cx+=cols[vi].w;
+function openAddProperty() {
+  editingPropertyId = null;
+  modalTenants = [];
+  document.getElementById('modal-prop-addr').value = '';
+  document.getElementById('modal-property-title').textContent = 'Add Property';
+  renderModalTenants();
+  openModal('modal-property');
+}
+
+function openEditProperty(id) {
+  const p = state.properties.find(x => x.id === id);
+  if (!p) return;
+  editingPropertyId = id;
+  modalTenants = [...p.tenants];
+  document.getElementById('modal-prop-addr').value = p.address;
+  document.getElementById('modal-property-title').textContent = 'Edit Property';
+  renderModalTenants();
+  openModal('modal-property');
+}
+
+function addTenantToModal() {
+  const inp = document.getElementById('modal-tenant-input');
+  const val = inp.value.trim();
+  if (!val) return;
+  if (modalTenants.includes(val)) { showToast('Tenant already added'); return; }
+  modalTenants.push(val);
+  inp.value = '';
+  renderModalTenants();
+}
+
+function removeTenantFromModal(name) {
+  modalTenants = modalTenants.filter(t => t !== name);
+  renderModalTenants();
+}
+
+function renderModalTenants() {
+  document.getElementById('modal-tenant-list').innerHTML = modalTenants.map(t =>
+    `<span class="tenant-tag">👤 ${esc(t)} <span class="tenant-del" onclick="removeTenantFromModal('${esc(t)}')">×</span></span>`
+  ).join('') || '<span style="font-size:12px;color:var(--text-muted);">No tenants added yet.</span>';
+}
+
+function saveProperty() {
+  const addr = document.getElementById('modal-prop-addr').value.trim();
+  if (!addr) { showToast('Please enter a property address'); return; }
+  if (editingPropertyId) {
+    const p = state.properties.find(x => x.id === editingPropertyId);
+    if (p) { p.name = addr; p.address = addr; p.tenants = [...modalTenants]; }
+  } else {
+    state.properties.push({ id: uid(), name: addr, address: addr, tenants: [...modalTenants] });
+  }
+  save();
+  closeModal('modal-property');
+  renderPropertyList();
+  refreshPropertyDropdown();
+  showToast('Property saved ✓');
+}
+
+function deleteProperty(id) {
+  if (!confirm('Delete this property? Receipts will remain in the ledger.')) return;
+  state.properties = state.properties.filter(p => p.id !== id);
+  save();
+  renderPropertyList();
+  refreshPropertyDropdown();
+}
+
+function refreshPropertyDropdown() {
+  const sel = document.getElementById('sel-property');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">— Select Property —</option>' +
+    state.properties.map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
+  if (state.properties.find(p => p.id === cur)) sel.value = cur;
+  onPropertyChange();
+}
+
+function onPropertyChange() {
+  const propId = document.getElementById('sel-property').value;
+  const sel = document.getElementById('sel-tenant');
+  sel.innerHTML = '<option value="">— Select Tenant —</option>';
+  if (propId) {
+    const p = state.properties.find(x => x.id === propId);
+    if (p) p.tenants.forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t; opt.textContent = t;
+      sel.appendChild(opt);
     });
-    doc.setDrawColor(240,171,220);doc.setLineWidth(.2);doc.line(M,y+7,W-M,y+7);y+=7;if(y>270){doc.addPage();y=20;}
-  });
-  y+=8;
-  doc.setFillColor(219,39,119);doc.roundedRect(M,y,W-M*2,10,3,3,'F');
-  doc.setFillColor(126,34,206);doc.roundedRect(M+(W-M*2)*.55,y,(W-M*2)*.45,10,3,3,'F');
-  doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(255,220,240);doc.setCharSpace(1);
-  doc.text('TOTAL COLLECTED',M+5,y+6.5);doc.setCharSpace(0);
-  doc.setFontSize(11);doc.setTextColor(255,255,255);doc.text(fmt(total),W-M-5,y+7,{align:'right'});
-  openPDF(doc,'Rental_Ledger.pdf');
+  }
 }
 
-renderLedger();
+// ════════════════════════════════════════════
+// RECEIPT GENERATION
+// ════════════════════════════════════════════
+function generateReceipt() {
+  const propId = document.getElementById('sel-property').value;
+  const tenant = document.getElementById('sel-tenant').value;
+  const period = document.getElementById('inp-period').value;
+  const amount = parseFloat(document.getElementById('inp-amount').value) || 0;
+  const method = document.getElementById('inp-method').value;
+  const date = document.getElementById('inp-date').value;
+  const lateFee = parseFloat(document.getElementById('inp-latefee').value) || 0;
+  const notes = document.getElementById('inp-notes').value.trim();
+  const status = document.getElementById('inp-status').value;
+
+  if (!propId) { showToast('Please select a property'); return; }
+  if (!tenant) { showToast('Please select a tenant'); return; }
+  if (!period) { showToast('Please select a rental period'); return; }
+  if (!amount) { showToast('Please enter an amount'); return; }
+  if (!date) { showToast('Please select a payment date'); return; }
+
+  const prop = state.properties.find(p => p.id === propId);
+  const receiptNum = 'RCP-' + String(state.receiptCounter).padStart(3, '0');
+
+  currentReceipt = {
+    id: uid(),
+    receiptNum,
+    propertyId: propId,
+    propertyName: prop ? prop.name : '',
+    propertyAddress: prop ? prop.address : '',
+    tenant,
+    period,
+    amount,
+    lateFee,
+    method,
+    date,
+    notes,
+    status,
+    createdAt: new Date().toISOString()
+  };
+
+  renderReceiptHTML(currentReceipt);
+  document.getElementById('receipt-preview-wrap').style.display = 'block';
+  document.getElementById('receipt-preview-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function renderReceiptHTML(r) {
+  const total = r.amount + (r.lateFee || 0);
+  const periodLabel = r.period ? formatPeriod(r.period) : '';
+  const company = state.settings.company || 'RentReceipt Pro';
+  const contact = state.settings.contact || '';
+  const html = `
+    <div class="receipt-header-bar">
+      <div>
+        <div class="receipt-co-name">${esc(company)}</div>
+        <div class="receipt-co-sub">Rental Receipt</div>
+        ${contact ? `<div style="font-size:11px;color:#8fa8c4;margin-top:6px;white-space:pre-line;line-height:1.5;">${esc(contact)}</div>` : ''}
+      </div>
+      <div class="receipt-num">
+        <strong>${esc(r.receiptNum)}</strong><br>
+        ${formatDate(r.date)}<br>
+        <span style="font-size:10px;">${r.status === 'paid' ? '✅ PAID' : '⏳ UNPAID'}</span>
+      </div>
+    </div>
+    <div class="receipt-body">
+      <div class="receipt-amount-block">
+        <div class="receipt-amount-label">Total Amount ${r.status === 'paid' ? 'Received' : 'Due'}</div>
+        <div class="receipt-amount-value"><sup>$</sup>${fmtAmt(total)}</div>
+        ${r.lateFee > 0 ? `<div style="font-size:11px;color:#e05c5c;margin-top:4px;">Includes $${fmtAmt(r.lateFee)} late fee</div>` : ''}
+      </div>
+      <div class="receipt-grid">
+        <div class="receipt-field">
+          <div class="receipt-field-label">Tenant</div>
+          <div class="receipt-field-value">${esc(r.tenant)}</div>
+        </div>
+        <div class="receipt-field">
+          <div class="receipt-field-label">Rental Period</div>
+          <div class="receipt-field-value">${esc(periodLabel)}</div>
+        </div>
+        <div class="receipt-field receipt-full-row">
+          <div class="receipt-field-label">Property</div>
+          <div class="receipt-field-value">${esc(r.propertyName)}${r.propertyAddress ? ' — ' + esc(r.propertyAddress) : ''}</div>
+        </div>
+        <div class="receipt-field">
+          <div class="receipt-field-label">Payment Method</div>
+          <div class="receipt-field-value">${esc(r.method)}</div>
+        </div>
+        <div class="receipt-field">
+          <div class="receipt-field-label">Rent Amount</div>
+          <div class="receipt-field-value">$${fmtAmt(r.amount)}</div>
+        </div>
+        ${r.lateFee > 0 ? `
+        <div class="receipt-field">
+          <div class="receipt-field-label">Late Fee</div>
+          <div class="receipt-field-value" style="color:#c0392b;">$${fmtAmt(r.lateFee)}</div>
+        </div>` : ''}
+      </div>
+      ${r.notes ? `<div class="receipt-notes"><strong style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#7a8fa4;">Notes</strong><br>${esc(r.notes)}</div>` : ''}
+    </div>
+    <div class="receipt-footer">
+      <div class="receipt-footer-left">Thank you for your payment.</div>
+      <div class="receipt-footer-right">${esc(r.receiptNum)} · ${formatDate(r.date)}</div>
+    </div>
+  `;
+  document.getElementById('receipt-paper-el').innerHTML = html;
+}
+
+function clearReceipt() {
+  currentReceipt = null;
+  document.getElementById('receipt-preview-wrap').style.display = 'none';
+  document.getElementById('receipt-paper-el').innerHTML = '';
+}
+
+function saveToLedger() {
+  if (!currentReceipt) return;
+  // Check if already saved
+  if (state.receipts.find(r => r.id === currentReceipt.id)) {
+    showToast('Already saved to ledger');
+    return;
+  }
+  state.receipts.unshift(currentReceipt);
+  state.receiptCounter++;
+  save();
+  showToast('Saved to ledger ✓');
+  currentReceipt = null;
+  document.getElementById('receipt-preview-wrap').style.display = 'none';
+  // Reset form
+  document.getElementById('inp-amount').value = '';
+  document.getElementById('inp-latefee').value = '';
+  document.getElementById('inp-notes').value = '';
+}
+
+// ════════════════════════════════════════════
+// PDF / SHARE  — pure jsPDF drawing (no html2canvas)
+// ════════════════════════════════════════════
+async function sharePDF(receipt = null) {
+  const r = receipt || currentReceipt;
+  if (!r) { showToast('Generate a receipt first'); return; }
+  await buildAndSharePDF(r);
+}
+
+async function buildAndSharePDF(r) {
+  showToast('Building PDF…');
+  try {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a5' });
+    const W = pdf.internal.pageSize.getWidth();   // 148 mm
+    const company = state.settings.company || 'RentReceipt Pro';
+    const contact = state.settings.contact || '';
+    const total = r.amount + (r.lateFee || 0);
+
+    // ── Helper: hex to RGB array
+    function hexRGB(hex) {
+      const h = hex.replace('#','');
+      return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
+    }
+    function setFill(hex) { const [r,g,b] = hexRGB(hex); pdf.setFillColor(r,g,b); }
+    function setDraw(hex) { const [r,g,b] = hexRGB(hex); pdf.setDrawColor(r,g,b); }
+    function setTxt(hex)  { const [r,g,b] = hexRGB(hex); pdf.setTextColor(r,g,b); }
+
+    // ── HEADER BAND
+    setFill('#0d1b2a');
+    pdf.rect(0, 0, W, 38, 'F');
+
+    // Gold accent bar
+    setFill('#c9a84c');
+    pdf.rect(0, 0, 3, 38, 'F');
+
+    // Company name
+    setTxt('#c9a84c');
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(14);
+    pdf.text(company, 10, 12);
+
+    // "RENTAL RECEIPT" subtitle
+    setTxt('#8fa8c4');
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(7.5);
+    pdf.text('RENTAL RECEIPT', 10, 18);
+
+    // Contact info (if any)
+    if (contact) {
+      pdf.setFontSize(7);
+      const lines = contact.split('\n').slice(0,3);
+      lines.forEach((l, i) => pdf.text(l, 10, 24 + i * 5));
+    }
+
+    // Receipt number (right side)
+    setTxt('#c9a84c');
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(11);
+    pdf.text(r.receiptNum, W - 10, 12, { align: 'right' });
+
+    setTxt('#8fa8c4');
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(8);
+    pdf.text(formatDate(r.date), W - 10, 19, { align: 'right' });
+
+    // Status badge
+    const isPaid = r.status === 'paid';
+    setFill(isPaid ? '#1a4a35' : '#4a3a1a');
+    pdf.roundedRect(W - 34, 23, 24, 8, 2, 2, 'F');
+    setTxt(isPaid ? '#3ecf8e' : '#f5a623');
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(7);
+    pdf.text(isPaid ? '✓ PAID' : '⏳ UNPAID', W - 22, 28.5, { align: 'center' });
+
+    // ── AMOUNT BLOCK
+    let y = 48;
+    setTxt('#7a8fa4');
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(7.5);
+    pdf.text(`TOTAL AMOUNT ${isPaid ? 'RECEIVED' : 'DUE'}`, W / 2, y, { align: 'center' });
+    y += 7;
+
+    setTxt('#0d1b2a');
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(28);
+    pdf.text(`$${fmtAmt(total)}`, W / 2, y, { align: 'center' });
+    y += 5;
+
+    if (r.lateFee > 0) {
+      setTxt('#c0392b');
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(7.5);
+      pdf.text(`Includes $${fmtAmt(r.lateFee)} late fee`, W / 2, y, { align: 'center' });
+      y += 5;
+    }
+
+    // Divider
+    y += 4;
+    setDraw('#e0e6ed');
+    pdf.setLineWidth(0.3);
+    pdf.line(10, y, W - 10, y);
+    y += 7;
+
+    // ── FIELDS GRID
+    function fieldLabel(label, x, fy) {
+      setTxt('#9aa5b4');
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(7);
+      pdf.text(label.toUpperCase(), x, fy);
+    }
+    function fieldValue(val, x, fy) {
+      setTxt('#1a1a2e');
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(9.5);
+      pdf.text(String(val || '—'), x, fy);
+    }
+
+    const col1 = 10, col2 = W / 2 + 4;
+    const rowH = 14;
+
+    // Row 1: Tenant | Period
+    fieldLabel('Tenant', col1, y);
+    fieldLabel('Rental Period', col2, y);
+    y += 4.5;
+    fieldValue(r.tenant, col1, y);
+    fieldValue(formatPeriod(r.period), col2, y);
+    y += rowH - 4.5;
+
+    // Row 2: Property (full width)
+    fieldLabel('Property', col1, y);
+    y += 4.5;
+    const propStr = r.propertyName + (r.propertyAddress ? '  ·  ' + r.propertyAddress : '');
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(9.5);
+    setTxt('#1a1a2e');
+    const propLines = pdf.splitTextToSize(propStr, W - 20);
+    pdf.text(propLines, col1, y);
+    y += propLines.length * 5 + (rowH - 9.5);
+
+    // Row 3: Payment Method | Rent Amount
+    fieldLabel('Payment Method', col1, y);
+    fieldLabel('Rent Amount', col2, y);
+    y += 4.5;
+    fieldValue(r.method, col1, y);
+    fieldValue(`$${fmtAmt(r.amount)}`, col2, y);
+    y += rowH - 4.5;
+
+    // Late fee row (if applicable)
+    if (r.lateFee > 0) {
+      fieldLabel('Late Fee', col1, y);
+      y += 4.5;
+      setTxt('#c0392b');
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(9.5);
+      pdf.text(`$${fmtAmt(r.lateFee)}`, col1, y);
+      y += rowH - 4.5;
+    }
+
+    // Notes
+    if (r.notes) {
+      setFill('#f5f7fa');
+      setDraw('#e0e6ed');
+      pdf.setLineWidth(0.2);
+      pdf.roundedRect(10, y - 2, W - 20, 5 + Math.ceil(r.notes.length / 55) * 5 + 6, 2, 2, 'FD');
+      fieldLabel('Notes', 14, y + 3);
+      y += 7;
+      setTxt('#4a5568');
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(8.5);
+      const noteLines = pdf.splitTextToSize(r.notes, W - 32);
+      pdf.text(noteLines, 14, y);
+      y += noteLines.length * 5 + 8;
+    }
+
+    // ── FOOTER BAND
+    const footerY = pdf.internal.pageSize.getHeight() - 14;
+    setFill('#f5f7fa');
+    pdf.rect(0, footerY, W, 14, 'F');
+    setDraw('#e0e6ed');
+    pdf.setLineWidth(0.2);
+    pdf.line(0, footerY, W, footerY);
+
+    setTxt('#9aa5b4');
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(7.5);
+    pdf.text('Thank you for your payment.', 10, footerY + 7);
+    pdf.text(`${r.receiptNum}  ·  ${formatDate(r.date)}`, W - 10, footerY + 7, { align: 'right' });
+
+    // ── OUTPUT & SHARE
+    const blob = pdf.output('blob');
+    const filename = `${r.receiptNum}.pdf`;
+    const url = URL.createObjectURL(blob);
+
+    // iOS Safari: open PDF in new tab — user taps the share icon in Safari toolbar to send
+    // This works universally regardless of http/https/file protocol
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    if (isIOS) {
+      // Open in same tab so Safari's share button is available
+      window.open(url, '_blank');
+      showToast('Tap the share icon in Safari to send');
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } else if (navigator.share && navigator.canShare) {
+      const file = new File([blob], filename, { type: 'application/pdf' });
+      try {
+        if (navigator.canShare({ files: [file] })) {
+          await navigator.share({ title: `Receipt ${r.receiptNum}`, files: [file] });
+          showToast('Receipt shared ✓');
+          URL.revokeObjectURL(url);
+          return;
+        }
+      } catch(e) { /* fall through to download */ }
+      // Fallback: download
+      const a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      showToast('PDF downloaded ✓');
+    } else {
+      // Desktop fallback: download
+      const a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      showToast('PDF downloaded ✓');
+    }
+  } catch(e) {
+    console.error('PDF error:', e);
+    showToast('Error generating PDF');
+  }
+}
+
+// ════════════════════════════════════════════
+// LEDGER
+// ════════════════════════════════════════════
+function toggleStatusFilter() {
+  const filters = ['all', 'paid', 'unpaid'];
+  const idx = filters.indexOf(ledgerStatusFilter);
+  ledgerStatusFilter = filters[(idx + 1) % filters.length];
+  const labels = { all: 'All', paid: '✅ Paid', unpaid: '⏳ Unpaid' };
+  document.getElementById('filter-status-btn').textContent = labels[ledgerStatusFilter];
+  document.getElementById('filter-status-btn').classList.toggle('active', ledgerStatusFilter !== 'all');
+  renderLedger();
+}
+
+function setSort(field) {
+  if (ledgerSort.field === field) {
+    ledgerSort.dir = ledgerSort.dir === 'asc' ? 'desc' : 'asc';
+  } else {
+    ledgerSort.field = field;
+    ledgerSort.dir = field === 'amount' ? 'desc' : 'asc';
+  }
+  // Update pill styles
+  document.querySelectorAll('.sort-pill').forEach(p => {
+    const isActive = p.dataset.sort === field;
+    p.classList.toggle('active', isActive);
+    const arrow = p.querySelector('.sort-arrow');
+    if (arrow) arrow.textContent = isActive ? (ledgerSort.dir === 'asc' ? '↑' : '↓') : '';
+  });
+  renderLedger();
+}
+
+function renderLedger() {
+  const query = (document.getElementById('ledger-search')?.value || '').toLowerCase();
+  let receipts = [...state.receipts];
+
+  if (query) {
+    receipts = receipts.filter(r =>
+      r.tenant.toLowerCase().includes(query) ||
+      (r.propertyAddress || '').toLowerCase().includes(query) ||
+      r.receiptNum.toLowerCase().includes(query)
+    );
+  }
+  if (ledgerStatusFilter !== 'all') {
+    receipts = receipts.filter(r => r.status === ledgerStatusFilter);
+  }
+
+  // Sort
+  receipts.sort((a, b) => {
+    let va, vb;
+    if (ledgerSort.field === 'date')     { va = a.date; vb = b.date; }
+    else if (ledgerSort.field === 'name')     { va = a.tenant.toLowerCase(); vb = b.tenant.toLowerCase(); }
+    else if (ledgerSort.field === 'property') { va = (a.propertyAddress || '').toLowerCase(); vb = (b.propertyAddress || '').toLowerCase(); }
+    else if (ledgerSort.field === 'amount')   { va = a.amount + (a.lateFee||0); vb = b.amount + (b.lateFee||0); }
+    if (va < vb) return ledgerSort.dir === 'asc' ? -1 : 1;
+    if (va > vb) return ledgerSort.dir === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  // Stats (always from full unfiltered set)
+  const totalPaid = state.receipts.filter(r => r.status === 'paid').reduce((s, r) => s + r.amount + (r.lateFee || 0), 0);
+  const totalUnpaid = state.receipts.filter(r => r.status === 'unpaid').reduce((s, r) => s + r.amount + (r.lateFee || 0), 0);
+  document.getElementById('stats-bar').innerHTML = `
+    <div class="stat-card"><div class="stat-value">${state.receipts.length}</div><div class="stat-label">Receipts</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--success);">$${fmtAmt(totalPaid)}</div><div class="stat-label">Collected</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--warning);">$${fmtAmt(totalUnpaid)}</div><div class="stat-label">Outstanding</div></div>
+  `;
+
+  // Sync sort pill arrows on initial render
+  document.querySelectorAll('.sort-pill').forEach(p => {
+    const isActive = p.dataset.sort === ledgerSort.field;
+    p.classList.toggle('active', isActive);
+    let arrow = p.querySelector('.sort-arrow');
+    if (!arrow) { arrow = document.createElement('span'); arrow.className = 'sort-arrow'; p.appendChild(arrow); }
+    arrow.textContent = isActive ? (ledgerSort.dir === 'asc' ? ' ↑' : ' ↓') : '';
+  });
+
+  const el = document.getElementById('ledger-list');
+  if (!receipts.length) {
+    el.innerHTML = `<div class="ledger-empty"><div class="empty-icon">📋</div><p>${state.receipts.length ? 'No receipts match your search.' : 'No receipts yet.\nGenerate your first receipt above.'}</p></div>`;
+    return;
+  }
+
+  el.innerHTML = receipts.map(r => `
+    <div class="ledger-item" id="li-${r.id}" onclick="toggleLedgerItem('${r.id}')">
+      <div class="ledger-item-main">
+        <div class="ledger-item-icon">${r.status === 'paid' ? '✅' : '⏳'}</div>
+        <div class="ledger-item-info">
+          <div class="ledger-item-tenant">${esc(r.tenant)}</div>
+          <div class="ledger-item-meta">${esc(r.propertyAddress)} · ${formatPeriod(r.period)}</div>
+          <span class="ledger-item-badge ${r.status === 'paid' ? 'badge-paid-sm' : 'badge-unpaid-sm'}">${r.status === 'paid' ? 'Paid' : 'Unpaid'}</span>
+        </div>
+        <div class="ledger-item-right">
+          <div class="ledger-item-amount">$${fmtAmt(r.amount + (r.lateFee||0))}</div>
+          <div class="ledger-item-num">${esc(r.receiptNum)}</div>
+        </div>
+      </div>
+      <div class="ledger-item-actions">
+        <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();reshareReceipt('${r.id}')">📤 Share PDF</button>
+        <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openEditReceipt('${r.id}')">✏️ Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteReceipt('${r.id}')">🗑️ Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleLedgerItem(id) {
+  const el = document.getElementById('li-' + id);
+  if (!el) return;
+  el.classList.toggle('expanded');
+}
+
+function reshareReceipt(id) {
+  const r = state.receipts.find(x => x.id === id);
+  if (!r) return;
+  sharePDF(r);
+}
+
+function openEditReceipt(id) {
+  const r = state.receipts.find(x => x.id === id);
+  if (!r) return;
+  editingReceiptId = id;
+  document.getElementById('edit-amount').value = r.amount;
+  document.getElementById('edit-method').value = r.method;
+  document.getElementById('edit-date').value = r.date;
+  document.getElementById('edit-latefee').value = r.lateFee || 0;
+  document.getElementById('edit-notes').value = r.notes || '';
+  document.getElementById('edit-status').value = r.status;
+  openModal('modal-edit-receipt');
+}
+
+function saveEditReceipt() {
+  const r = state.receipts.find(x => x.id === editingReceiptId);
+  if (!r) return;
+  r.amount = parseFloat(document.getElementById('edit-amount').value) || 0;
+  r.method = document.getElementById('edit-method').value;
+  r.date = document.getElementById('edit-date').value;
+  r.lateFee = parseFloat(document.getElementById('edit-latefee').value) || 0;
+  r.notes = document.getElementById('edit-notes').value;
+  r.status = document.getElementById('edit-status').value;
+  save();
+  closeModal('modal-edit-receipt');
+  renderLedger();
+  showToast('Receipt updated ✓');
+}
+
+function deleteReceipt(id) {
+  if (!confirm('Delete this receipt? This cannot be undone.')) return;
+  state.receipts = state.receipts.filter(r => r.id !== id);
+  save();
+  renderLedger();
+  showToast('Receipt deleted');
+}
+
+// ════════════════════════════════════════════
+// EXPORT
+// ════════════════════════════════════════════
+function exportCSV() {
+  if (!state.receipts.length) { showToast('No receipts to export'); return; }
+  const headers = ['Receipt #', 'Date', 'Tenant', 'Property Address', 'Rental Period', 'Rent Amount', 'Late Fee', 'Total', 'Payment Method', 'Status', 'Notes'];
+  const rows = state.receipts.map(r => [
+    r.receiptNum,
+    r.date,
+    r.tenant,
+    r.propertyAddress,
+    formatPeriod(r.period),
+    Number(r.amount).toFixed(2),
+    Number(r.lateFee || 0).toFixed(2),
+    Number(r.amount + (r.lateFee || 0)).toFixed(2),
+    r.method,
+    r.status.charAt(0).toUpperCase() + r.status.slice(1),
+    r.notes || ''
+  ]);
+  // Use \r\n (Windows line endings) for maximum compatibility with Notepad/Excel
+  const CRLF = '\r\n';
+  const csv = '\uFEFF' + [headers, ...rows] // BOM for Excel UTF-8 recognition
+    .map(row => row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))
+    .join(CRLF);
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'rentreceipt-ledger.csv';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('CSV exported ✓');
+}
+
+async function exportPDFLedger() {
+  if (!state.receipts.length) { showToast('No receipts to export'); return; }
+  showToast('Generating PDF report…');
+  try {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const company = state.settings.company || 'RentReceipt Pro';
+    let y = 20;
+
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(18);
+    pdf.setTextColor(13, 27, 42);
+    pdf.text(company, 14, y); y += 8;
+
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(10);
+    pdf.setTextColor(100);
+    pdf.text(`Rental Ledger Report — Generated ${new Date().toLocaleDateString('en-CA')}`, 14, y); y += 12;
+
+    // Summary
+    const totalPaid = state.receipts.filter(r => r.status === 'paid').reduce((s, r) => s + r.amount + (r.lateFee||0), 0);
+    const totalOut = state.receipts.filter(r => r.status === 'unpaid').reduce((s, r) => s + r.amount + (r.lateFee||0), 0);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(11);
+    pdf.setTextColor(40);
+    pdf.text(`Total Receipts: ${state.receipts.length}   Collected: $${fmtAmt(totalPaid)}   Outstanding: $${fmtAmt(totalOut)}`, 14, y); y += 10;
+
+    // Table headers
+    pdf.setFillColor(13, 27, 42);
+    pdf.rect(14, y, 182, 8, 'F');
+    pdf.setTextColor(255);
+    pdf.setFontSize(9);
+    const cols = [14, 36, 78, 108, 130, 155, 175];
+    const headers2 = ['#', 'Tenant', 'Property', 'Period', 'Amount', 'Method', 'Status'];
+    headers2.forEach((h, i) => pdf.text(h, cols[i], y + 5.5));
+    y += 10;
+
+    pdf.setTextColor(40);
+    state.receipts.forEach((r, idx) => {
+      if (y > 270) { pdf.addPage(); y = 20; }
+      if (idx % 2 === 0) { pdf.setFillColor(245, 247, 250); pdf.rect(14, y - 1, 182, 7, 'F'); }
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(8.5);
+      const vals = [r.receiptNum, r.tenant.substring(0,18), r.propertyName.substring(0,20), formatPeriod(r.period), `$${fmtAmt(r.amount+(r.lateFee||0))}`, r.method, r.status];
+      vals.forEach((v, i) => pdf.text(String(v), cols[i], y + 4));
+      y += 8;
+    });
+
+    const blob = pdf.output('blob');
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'rentreceipt-report.pdf';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('PDF report exported ✓');
+  } catch(e) {
+    console.error(e);
+    showToast('Error exporting PDF');
+  }
+}
+
+// ════════════════════════════════════════════
+// MODALS
+// ════════════════════════════════════════════
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
+});
+
+// ════════════════════════════════════════════
+// TOAST
+// ════════════════════════════════════════════
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ════════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════════
+function uid() { return Math.random().toString(36).slice(2) + Date.now().toString(36); }
+function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtAmt(n) { return Number(n || 0).toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function formatDate(d) {
+  if (!d) return '';
+  const [y, m, day] = d.split('-');
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${months[parseInt(m)-1]} ${parseInt(day)}, ${y}`;
+}
+function formatPeriod(p) {
+  if (!p) return '';
+  const [y, m] = p.split('-');
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  return `${months[parseInt(m)-1]} ${y}`;
+}
+
+// ════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════
+function init() {
+  load();
+  // Set default date to today
+  document.getElementById('inp-date').value = new Date().toISOString().slice(0,10);
+  // Set default period to current month
+  document.getElementById('inp-period').value = new Date().toISOString().slice(0,7);
+  // Load settings
+  document.getElementById('set-company').value = state.settings.company || '';
+  document.getElementById('set-contact').value = state.settings.contact || '';
+  // Load property dropdown
+  refreshPropertyDropdown();
+  // Initial ledger stats render
+  renderLedger();
+}
+
+init();
 </script>
+
+<!-- PWA Manifest inline reference -->
+<script>
+// Create manifest dynamically
+const manifest = {
+  name: "RentReceipt Pro",
+  short_name: "RentReceipt",
+  description: "Rental receipt generator and payment ledger",
+  start_url: "./",
+  display: "standalone",
+  background_color: "#060d14",
+  theme_color: "#0d1b2a",
+  orientation: "portrait",
+  icons: [
+    { src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='32' fill='%230d1b2a'/><text y='140' x='28' font-size='130'>🧾</text></svg>", sizes: "192x192", type: "image/svg+xml" }
+  ]
+};
+const blob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+const manifestURL = URL.createObjectURL(blob);
+document.querySelector('link[rel="manifest"]')?.remove();
+const link = document.createElement('link');
+link.rel = 'manifest';
+link.href = manifestURL;
+document.head.appendChild(link);
+</script>
+
 </body>
 </html>
