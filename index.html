@@ -11,8 +11,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<!-- MODAL: PDF Report Options -->
-<div class="modal-overlay" id="modal-pdf-report">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
 :root {
@@ -336,21 +335,21 @@ html, body {
   font-size: 12px;
   color: #8fa8c4;
   text-align: right;
-  line-height: 1.6;
+  line-height: 1.8;
 }
-.receipt-num strong { color: #c9a84c; font-size: 14px; display: block; margin-bottom: 2px; }
+.receipt-num strong { color: #c9a84c; font-size: 14px; }
 
 .receipt-body { padding: 20px 24px; }
 
 .receipt-amount-block {
   text-align: center;
-  padding: 20px 0 18px;
+  padding: 18px 0 16px;
   border-bottom: 1px solid #e8edf2;
   margin-bottom: 18px;
 }
-.receipt-amount-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: #9aa5b4; margin-bottom: 10px; }
-.receipt-amount-value { font-family: 'DM Mono', monospace; font-size: 42px; font-weight: 600; color: #0d1b2a; line-height: 1; }
-.receipt-amount-value sup { font-size: 20px; vertical-align: super; font-weight: 400; }
+.receipt-amount-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #7a8fa4; margin-bottom: 4px; }
+.receipt-amount-value { font-family: 'DM Mono', monospace; font-size: 38px; font-weight: 500; color: #0d1b2a; line-height: 1; }
+.receipt-amount-value sup { font-size: 18px; vertical-align: super; }
 
 .receipt-grid {
   display: grid;
@@ -870,7 +869,7 @@ html, body {
       <!-- Export -->
       <div class="export-bar">
         <button class="btn btn-secondary btn-sm" onclick="exportCSV()">📥 CSV</button>
-        <button class="btn btn-secondary btn-sm" onclick="openReportModal()">📄 PDF Report</button>
+        <button class="btn btn-secondary btn-sm" onclick="exportPDFLedger()">📄 PDF Report</button>
       </div>
 
       <div class="ledger-list" id="ledger-list"></div>
@@ -911,96 +910,6 @@ html, body {
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
-
-<!-- MODAL: PDF Report Options -->
-<div class="modal-overlay" id="modal-pdf-report">
-  <div class="modal-sheet">
-    <div class="modal-handle"></div>
-    <div class="modal-title">PDF Report</div>
-
-    <div class="form-group">
-      <label class="form-label">Filter By</label>
-      <select class="form-select" id="rpt-filter-type" onchange="onReportFilterChange()">
-        <option value="all">All Receipts</option>
-        <option value="unit">By Property / Unit</option>
-        <option value="tenant">By Tenant Name</option>
-        <option value="year">By Year</option>
-        <option value="month">By Month</option>
-        <option value="daterange">Date Range</option>
-      </select>
-    </div>
-
-    <div class="form-group" id="rpt-field-unit" style="display:none;">
-      <label class="form-label">Property</label>
-      <select class="form-select" id="rpt-unit" onchange="updateReportCount()"></select>
-    </div>
-
-    <div class="form-group" id="rpt-field-tenant" style="display:none;">
-      <label class="form-label">Tenant</label>
-      <select class="form-select" id="rpt-tenant" onchange="updateReportCount()"></select>
-    </div>
-
-    <div class="form-group" id="rpt-field-year" style="display:none;">
-      <label class="form-label">Year</label>
-      <select class="form-select" id="rpt-year" onchange="updateReportCount()"></select>
-    </div>
-
-    <div class="form-group" id="rpt-field-month" style="display:none;">
-      <div class="form-row">
-        <div>
-          <label class="form-label">Year</label>
-          <select class="form-select" id="rpt-month-year" onchange="updateReportCount()"></select>
-        </div>
-        <div>
-          <label class="form-label">Month</label>
-          <select class="form-select" id="rpt-month-month" onchange="updateReportCount()">
-            <option value="01">January</option><option value="02">February</option>
-            <option value="03">March</option><option value="04">April</option>
-            <option value="05">May</option><option value="06">June</option>
-            <option value="07">July</option><option value="08">August</option>
-            <option value="09">September</option><option value="10">October</option>
-            <option value="11">November</option><option value="12">December</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <div class="form-group" id="rpt-field-daterange" style="display:none;">
-      <div class="form-row">
-        <div>
-          <label class="form-label">From</label>
-          <input type="date" class="form-input" id="rpt-date-from" onchange="updateReportCount()">
-        </div>
-        <div>
-          <label class="form-label">To</label>
-          <input type="date" class="form-input" id="rpt-date-to" onchange="updateReportCount()">
-        </div>
-      </div>
-    </div>
-
-    <div class="divider"></div>
-
-    <div class="form-group">
-      <label class="form-label">Sort By</label>
-      <select class="form-select" id="rpt-sort" onchange="updateReportCount()">
-        <option value="date-desc">Date — Newest First</option>
-        <option value="date-asc">Date — Oldest First</option>
-        <option value="name-asc">Tenant Name — A to Z</option>
-        <option value="name-desc">Tenant Name — Z to A</option>
-        <option value="property-asc">Property — A to Z</option>
-        <option value="amount-desc">Amount — Highest First</option>
-        <option value="amount-asc">Amount — Lowest First</option>
-      </select>
-    </div>
-
-    <div id="rpt-preview-count" style="font-size:13px;color:var(--text-secondary);margin-bottom:14px;min-height:20px;"></div>
-
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="exportPDFLedger()">📄 Generate PDF</button>
-      <button class="btn btn-secondary" onclick="closeModal('modal-pdf-report')">Cancel</button>
-    </div>
-  </div>
-</div>
 
 <!-- MODAL: Add/Edit Property -->
 <div class="modal-overlay" id="modal-property">
@@ -1309,9 +1218,9 @@ function renderReceiptHTML(r) {
         ${contact ? `<div style="font-size:11px;color:#8fa8c4;margin-top:6px;white-space:pre-line;line-height:1.5;">${esc(contact)}</div>` : ''}
       </div>
       <div class="receipt-num">
-        <strong>${esc(r.receiptNum)}</strong>
+        <strong>${esc(r.receiptNum)}</strong><br>
         ${formatDate(r.date)}<br>
-        <span style="display:inline-block;margin-top:4px;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:700;letter-spacing:0.08em;background:${r.status==='paid'?'rgba(62,207,142,0.18)':'rgba(245,166,35,0.18)'};color:${r.status==='paid'?'#1d9c66':'#c47d10'};border:1px solid ${r.status==='paid'?'rgba(62,207,142,0.35)':'rgba(245,166,35,0.35)'};">${r.status==='paid'?'PAID':'UNPAID'}</span>
+        <span style="font-size:10px;">${r.status === 'paid' ? '✅ PAID' : '⏳ UNPAID'}</span>
       </div>
     </div>
     <div class="receipt-body">
@@ -1331,7 +1240,7 @@ function renderReceiptHTML(r) {
         </div>
         <div class="receipt-field receipt-full-row">
           <div class="receipt-field-label">Property</div>
-          <div class="receipt-field-value">${esc(r.propertyAddress || r.propertyName)}</div>
+          <div class="receipt-field-value">${esc(r.propertyName)}${r.propertyAddress ? ' — ' + esc(r.propertyAddress) : ''}</div>
         </div>
         <div class="receipt-field">
           <div class="receipt-field-label">Payment Method</div>
@@ -1455,7 +1364,7 @@ async function buildAndSharePDF(r) {
     setTxt(isPaid ? '#3ecf8e' : '#f5a623');
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(7);
-    pdf.text(isPaid ? 'PAID' : 'UNPAID', W - 22, 28.5, { align: 'center' });
+    pdf.text(isPaid ? '✓ PAID' : '⏳ UNPAID', W - 22, 28.5, { align: 'center' });
 
     // ── AMOUNT BLOCK
     let y = 48;
@@ -1514,7 +1423,7 @@ async function buildAndSharePDF(r) {
     // Row 2: Property (full width)
     fieldLabel('Property', col1, y);
     y += 4.5;
-    const propStr = r.propertyAddress || r.propertyName || '';
+    const propStr = r.propertyName + (r.propertyAddress ? '  ·  ' + r.propertyAddress : '');
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(9.5);
     setTxt('#1a1a2e');
@@ -1574,28 +1483,35 @@ async function buildAndSharePDF(r) {
     // ── OUTPUT & SHARE
     const blob = pdf.output('blob');
     const filename = `${r.receiptNum}.pdf`;
-    const file = new File([blob], filename, { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
 
-    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+    // iOS Safari: open PDF in new tab — user taps the share icon in Safari toolbar to send
+    // This works universally regardless of http/https/file protocol
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    if (isIOS) {
+      // Open in same tab so Safari's share button is available
+      window.open(url, '_blank');
+      showToast('Tap the share icon in Safari to send');
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } else if (navigator.share && navigator.canShare) {
+      const file = new File([blob], filename, { type: 'application/pdf' });
       try {
-        await navigator.share({
-          title: `Receipt ${r.receiptNum} — ${r.tenant}`,
-          text: `Rental receipt for ${formatPeriod(r.period)} — $${fmtAmt(total)}`,
-          files: [file]
-        });
-        showToast('Receipt shared ✓');
-      } catch(e) {
-        if (e.name !== 'AbortError') {
-          // User didn't cancel — fall back to opening in new tab
-          const url = URL.createObjectURL(blob);
-          window.open(url, '_blank');
-          setTimeout(() => URL.revokeObjectURL(url), 60000);
-          showToast('PDF opened — use Safari share to send');
+        if (navigator.canShare({ files: [file] })) {
+          await navigator.share({ title: `Receipt ${r.receiptNum}`, files: [file] });
+          showToast('Receipt shared ✓');
+          URL.revokeObjectURL(url);
+          return;
         }
-      }
+      } catch(e) { /* fall through to download */ }
+      // Fallback: download
+      const a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      showToast('PDF downloaded ✓');
     } else {
-      // Desktop: download
-      const url = URL.createObjectURL(blob);
+      // Desktop fallback: download
       const a = document.createElement('a');
       a.href = url; a.download = filename;
       document.body.appendChild(a); a.click();
@@ -1795,248 +1711,65 @@ function exportCSV() {
   showToast('CSV exported ✓');
 }
 
-function openReportModal() {
-  // Populate dynamic dropdowns from receipts
-  const years = [...new Set(state.receipts.map(r => r.date.slice(0,4)))].sort().reverse();
-  const units = [...new Set(state.receipts.map(r => r.propertyAddress).filter(Boolean))].sort();
-  const tenants = [...new Set(state.receipts.map(r => r.tenant).filter(Boolean))].sort();
-
-  document.getElementById('rpt-year').innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join('');
-  document.getElementById('rpt-month-year').innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join('');
-  document.getElementById('rpt-unit').innerHTML = units.map(u => `<option value="${esc(u)}">${esc(u)}</option>`).join('');
-  document.getElementById('rpt-tenant').innerHTML = tenants.map(t => `<option value="${esc(t)}">${esc(t)}</option>`).join('');
-
-  // Reset to all
-  document.getElementById('rpt-filter-type').value = 'all';
-  document.getElementById('rpt-sort').value = 'date-desc';
-  onReportFilterChange();
-  openModal('modal-pdf-report');
-}
-
-function onReportFilterChange() {
-  const type = document.getElementById('rpt-filter-type').value;
-  ['unit','tenant','year','month','daterange'].forEach(f => {
-    document.getElementById(`rpt-field-${f}`).style.display = f === type ? 'block' : 'none';
-  });
-  updateReportCount();
-}
-
-function getReportReceipts() {
-  const type = document.getElementById('rpt-filter-type').value;
-  const sortVal = document.getElementById('rpt-sort')?.value || 'date-desc';
-  let receipts = [...state.receipts];
-
-  if (type === 'unit') {
-    const unit = document.getElementById('rpt-unit').value;
-    receipts = receipts.filter(r => r.propertyAddress === unit);
-  } else if (type === 'tenant') {
-    const tenant = document.getElementById('rpt-tenant').value;
-    receipts = receipts.filter(r => r.tenant === tenant);
-  } else if (type === 'year') {
-    const year = document.getElementById('rpt-year').value;
-    receipts = receipts.filter(r => r.date.startsWith(year));
-  } else if (type === 'month') {
-    const yr = document.getElementById('rpt-month-year').value;
-    const mo = document.getElementById('rpt-month-month').value;
-    receipts = receipts.filter(r => r.date.startsWith(`${yr}-${mo}`));
-  } else if (type === 'daterange') {
-    const from = document.getElementById('rpt-date-from').value;
-    const to = document.getElementById('rpt-date-to').value;
-    if (from) receipts = receipts.filter(r => r.date >= from);
-    if (to)   receipts = receipts.filter(r => r.date <= to);
-  }
-
-  const [sortField, sortDir] = sortVal.split('-');
-  receipts.sort((a, b) => {
-    let va, vb;
-    if (sortField === 'date')     { va = a.date; vb = b.date; }
-    else if (sortField === 'name')     { va = a.tenant.toLowerCase(); vb = b.tenant.toLowerCase(); }
-    else if (sortField === 'property') { va = (a.propertyAddress||'').toLowerCase(); vb = (b.propertyAddress||'').toLowerCase(); }
-    else if (sortField === 'amount')   { va = a.amount+(a.lateFee||0); vb = b.amount+(b.lateFee||0); }
-    if (va < vb) return sortDir === 'asc' ? -1 : 1;
-    if (va > vb) return sortDir === 'asc' ? 1 : -1;
-    return 0;
-  });
-
-  return receipts;
-}
-
-function updateReportCount() {
-  const receipts = getReportReceipts();
-  const total = receipts.reduce((s,r) => s + r.amount + (r.lateFee||0), 0);
-  const el = document.getElementById('rpt-preview-count');
-  if (!el) return;
-  el.textContent = receipts.length
-    ? `${receipts.length} receipt${receipts.length !== 1 ? 's' : ''} · Total $${fmtAmt(total)}`
-    : 'No receipts match this filter.';
-}
-
 async function exportPDFLedger() {
-  const receipts = getReportReceipts();
-  if (!receipts.length) { showToast('No receipts match this filter'); return; }
-  closeModal('modal-pdf-report');
+  if (!state.receipts.length) { showToast('No receipts to export'); return; }
   showToast('Generating PDF report…');
-
   try {
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-    const W = pdf.internal.pageSize.getWidth();
     const company = state.settings.company || 'RentReceipt Pro';
-    const filterType = document.getElementById('rpt-filter-type').value;
-    let filterLabel = 'All Receipts';
-    if (filterType === 'unit')      filterLabel = `Property: ${document.getElementById('rpt-unit').value}`;
-    else if (filterType === 'tenant')    filterLabel = `Tenant: ${document.getElementById('rpt-tenant').value}`;
-    else if (filterType === 'year')      filterLabel = `Year: ${document.getElementById('rpt-year').value}`;
-    else if (filterType === 'month') {
-      const mo = document.getElementById('rpt-month-month');
-      filterLabel = `${mo.options[mo.selectedIndex].text} ${document.getElementById('rpt-month-year').value}`;
-    } else if (filterType === 'daterange') {
-      const f = document.getElementById('rpt-date-from').value;
-      const t = document.getElementById('rpt-date-to').value;
-      filterLabel = `${f || '—'} to ${t || '—'}`;
-    }
-
-    let y = 16;
-
-    // ── Header band
-    pdf.setFillColor(13, 27, 42);
-    pdf.rect(0, 0, W, 28, 'F');
-    pdf.setFillColor(201, 168, 76);
-    pdf.rect(0, 0, 3, 28, 'F');
+    let y = 20;
 
     pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(14);
-    pdf.setTextColor(201, 168, 76);
-    pdf.text(company, 10, 11);
+    pdf.setFontSize(18);
+    pdf.setTextColor(13, 27, 42);
+    pdf.text(company, 14, y); y += 8;
 
     pdf.setFont('helvetica', 'normal');
-    pdf.setFontSize(8);
-    pdf.setTextColor(143, 168, 196);
-    pdf.text('RENTAL LEDGER REPORT', 10, 18);
-    pdf.text(`Generated ${new Date().toLocaleDateString('en-CA')}`, 10, 24);
+    pdf.setFontSize(10);
+    pdf.setTextColor(100);
+    pdf.text(`Rental Ledger Report — Generated ${new Date().toLocaleDateString('en-CA')}`, 14, y); y += 12;
 
-    // Filter label right-aligned
+    // Summary
+    const totalPaid = state.receipts.filter(r => r.status === 'paid').reduce((s, r) => s + r.amount + (r.lateFee||0), 0);
+    const totalOut = state.receipts.filter(r => r.status === 'unpaid').reduce((s, r) => s + r.amount + (r.lateFee||0), 0);
     pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(8);
-    pdf.setTextColor(201, 168, 76);
-    pdf.text(filterLabel, W - 10, 18, { align: 'right' });
-
-    y = 36;
-
-    // ── Summary row
-    const totalPaid = receipts.filter(r => r.status === 'paid').reduce((s,r) => s+r.amount+(r.lateFee||0), 0);
-    const totalOut  = receipts.filter(r => r.status === 'unpaid').reduce((s,r) => s+r.amount+(r.lateFee||0), 0);
-    const totalAll  = totalPaid + totalOut;
-
-    pdf.setFillColor(245, 247, 250);
-    pdf.rect(10, y, W - 20, 14, 'F');
-    pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(8.5);
+    pdf.setFontSize(11);
     pdf.setTextColor(40);
-    pdf.text(`${receipts.length} Receipt${receipts.length!==1?'s':''}`, 14, y + 5.5);
-    pdf.text(`Total: $${fmtAmt(totalAll)}`, 14, y + 11);
-    pdf.setTextColor(29, 156, 102);
-    pdf.text(`Collected: $${fmtAmt(totalPaid)}`, 80, y + 5.5);
-    pdf.setTextColor(196, 125, 16);
-    pdf.text(`Outstanding: $${fmtAmt(totalOut)}`, 80, y + 11);
-    y += 20;
+    pdf.text(`Total Receipts: ${state.receipts.length}   Collected: $${fmtAmt(totalPaid)}   Outstanding: $${fmtAmt(totalOut)}`, 14, y); y += 10;
 
-    // ── Table header
+    // Table headers
     pdf.setFillColor(13, 27, 42);
-    pdf.rect(10, y, W - 20, 8, 'F');
+    pdf.rect(14, y, 182, 8, 'F');
     pdf.setTextColor(255);
-    pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(7.5);
-    const cols  = [14,  36,  82, 118, 140, 163, 183];
-    const heads = ['#', 'Tenant', 'Property', 'Period', 'Amount', 'Method', 'Status'];
-    heads.forEach((h, i) => pdf.text(h, cols[i], y + 5.3));
+    pdf.setFontSize(9);
+    const cols = [14, 36, 78, 108, 130, 155, 175];
+    const headers2 = ['#', 'Tenant', 'Property', 'Period', 'Amount', 'Method', 'Status'];
+    headers2.forEach((h, i) => pdf.text(h, cols[i], y + 5.5));
     y += 10;
 
-    // ── Rows
-    receipts.forEach((r, idx) => {
-      if (y > 272) {
-        pdf.addPage();
-        y = 16;
-        // Repeat header
-        pdf.setFillColor(13, 27, 42);
-        pdf.rect(10, y, W - 20, 8, 'F');
-        pdf.setTextColor(255);
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(7.5);
-        heads.forEach((h, i) => pdf.text(h, cols[i], y + 5.3));
-        y += 10;
-      }
-
-      if (idx % 2 === 0) {
-        pdf.setFillColor(248, 250, 252);
-        pdf.rect(10, y - 1, W - 20, 8, 'F');
-      }
-
+    pdf.setTextColor(40);
+    state.receipts.forEach((r, idx) => {
+      if (y > 270) { pdf.addPage(); y = 20; }
+      if (idx % 2 === 0) { pdf.setFillColor(245, 247, 250); pdf.rect(14, y - 1, 182, 7, 'F'); }
       pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(8);
-      pdf.setTextColor(40);
-
-      const vals = [
-        r.receiptNum,
-        r.tenant.length > 16 ? r.tenant.slice(0,15) + '…' : r.tenant,
-        (r.propertyAddress||'').length > 24 ? (r.propertyAddress||'').slice(0,23) + '…' : (r.propertyAddress||''),
-        formatPeriod(r.period),
-        `$${fmtAmt(r.amount + (r.lateFee||0))}`,
-        r.method,
-        ''
-      ];
-      vals.forEach((v, i) => { if (i < 6) pdf.text(String(v), cols[i], y + 4.5); });
-
-      // Status badge
-      const isPaid = r.status === 'paid';
-      pdf.setFillColor(...(isPaid ? [220,248,236] : [254,243,219]));
-      pdf.roundedRect(cols[6] - 1, y + 0.5, 16, 6, 1, 1, 'F');
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(6.5);
-      pdf.setTextColor(...(isPaid ? [29,156,102] : [196,125,16]));
-      pdf.text(isPaid ? 'PAID' : 'UNPAID', cols[6] + 7, y + 4.5, { align: 'center' });
-
+      pdf.setFontSize(8.5);
+      const vals = [r.receiptNum, r.tenant.substring(0,18), r.propertyName.substring(0,20), formatPeriod(r.period), `$${fmtAmt(r.amount+(r.lateFee||0))}`, r.method, r.status];
+      vals.forEach((v, i) => pdf.text(String(v), cols[i], y + 4));
       y += 8;
     });
 
-    // ── Footer line
-    pdf.setDrawColor(220, 226, 234);
-    pdf.setLineWidth(0.3);
-    pdf.line(10, y + 4, W - 10, y + 4);
-    pdf.setFont('helvetica', 'normal');
-    pdf.setFontSize(7.5);
-    pdf.setTextColor(160);
-    pdf.text(`${company} · ${filterLabel}`, 10, y + 9);
-    pdf.text(`Page 1`, W - 10, y + 9, { align: 'right' });
-
-    // ── Save / Share
     const blob = pdf.output('blob');
-    const filename = `report-${filterType}-${new Date().toISOString().slice(0,10)}.pdf`;
-    const file = new File([blob], filename, { type: 'application/pdf' });
-
-    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-      try {
-        await navigator.share({ title: `${company} — Ledger Report`, files: [file] });
-        showToast('Report shared ✓');
-      } catch(e) {
-        if (e.name !== 'AbortError') {
-          const url = URL.createObjectURL(blob);
-          window.open(url, '_blank');
-          setTimeout(() => URL.revokeObjectURL(url), 60000);
-        }
-      }
-    } else {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = filename;
-      document.body.appendChild(a); a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-      showToast('PDF report downloaded ✓');
-    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'rentreceipt-report.pdf';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('PDF report exported ✓');
   } catch(e) {
     console.error(e);
-    showToast('Error generating report');
+    showToast('Error exporting PDF');
   }
 }
 
